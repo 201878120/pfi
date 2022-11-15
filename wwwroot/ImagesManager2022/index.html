@@ -40,6 +40,8 @@
                     <span>
                         <span class="cmd fa fa-plus-square" id="newImageCmd" title="Ajouter un image"
                             data-toggle="tooltip"></span>
+                        <span class="cmd fa fa-id-card" id="profileCmd" title="Voir votre profile"
+                            data-toggle="tooltip"></span>
                         <span class="cmd fa fa-sign-in" id="loginCmd" title="Connection"
                             data-toggle="tooltip"></span>
                         <span class="cmd fa fa-sign-out" id="logoutCmd" title="Déconnection"
@@ -94,6 +96,45 @@
                         <div class="note">Cliquez-Déposez une image</div>
                     </form>
                 </div>
+                <div id="profileDlg">
+                    <form id="profileForm">
+                        <label for="username_input">Nom d'usager</label>
+                        <input type="text" id="username_input" class="form-control" required>
+
+                        <label for="email_input">Courriel</label>
+                        <input type="text" id="email_input" class="form-control" required>
+
+                        <label for="password_input">Mot de passe</label>
+                        <input type="text" id="password_input" class="form-control">
+
+                        <label for="confirm_input">Confirmation</label>
+                        <input type="text" id="confirm_input" class="form-control">
+
+                        <label for="image">Avatar</label>
+                        <div id='image' class='ImageUploader' defaultImage='images/No_Image.png'
+                            waitingImage='images/writing.gif'>
+                        </div>
+                        <div class="note">Cliquez-Déposez une image</div>
+                    </form>
+                </div>
+                <div id="emailDlg">
+                    <span id="confirmationMessage">Consultez votre boîte de courriel pour connaître votre code de vérification et inscrivez-le ci-dessous</span>
+                    <br>
+                    <label for="code_input">Code vérification</label>
+                        <input type="text" id="code_input" class="form-control" required>
+                </div>
+                <div id="loginDlg">
+                    <form id="loginForm">
+                        <label for="email_input">Courriel</label>
+                        <input type="text" id="email_input" class="form-control" required>
+
+                        <label for="password_input">Mot de passe</label>
+                        <input type="text" id="password_input" class="form-control" required>
+
+                        <label for="remember_input">Se souvenir de moi</label>
+                        <input type="checkbox" id="remember_input" required>
+                    </form>
+                </div>
                 <div id="confirmDeleteDlg">
                     <span id="confirmationMessage"></span>
                 </div>
@@ -118,6 +159,7 @@
             let searchTitle = "";
             let hideSearchBar = true;
             let sortAscending = false;
+            let creatingProfile = false;
             let imageIdToDelete = 0; // used by confirmDeleteDlg
             let selectedCategory = "";
             let imagesCount = 50;
@@ -194,8 +236,8 @@
                 $(".editCmd").off();
                 $(".deleteCmd").off();
                 $(".showMore").off();
-                $(".editCmd").click(e => { editimage(e) });
-                $(".deleteCmd").click(e => { deleteimage(e) });
+                $(".editCmd").click(e => { editImage(e) });
+                $(".deleteCmd").click(e => { deleteImage(e) });
 
                 $('[data-toggle="tooltip"]').tooltip();
             }
@@ -230,16 +272,43 @@
                 $("#errorDlg").dialog('open');
             }
 
+
+            function login() {
+                $("#loginDlg").dialog('open');
+            }
+            function newProfile() {
+                creatingProfile = true;
+                $("#profileDlg").dialog('option', 'title', "Création de compte");
+                $("#profileDlgOkBtn").text("Créer");
+                $("#profileDlgDltBtn").hide(0);
+                $("#profileDlg").dialog('open');
+            }
+            function confirmEmail() {
+                $("#emailDlg").dialog('open');
+            }
+            function editProfile() {
+                creatingProfile = false;
+                $("#profileDlg").dialog('option', 'title', "Modification de profil");
+                $("#profileDlgOkBtn").text("Ajouter");
+                $("#profileDlgDltBtn").show(0);
+                $("#profileDlg").dialog('open');
+            }
+            function deleteProfile() {
+                $("#confirmDlg").dialog('option', 'title', "Retrait de compte...");
+                $("#confirmationMessage").html("Voulez-vous vraiment effacer votre compte?")
+                $("#confirmDeleteDlgOkBtn").text("Retirer mon compte");
+                $("#confirmDeleteDlg").dialog('open');
+            }
             function newImage() {
                 holdCheckETag = true;
                 createMode = true;
-                resetimageForm();
+                resetImageForm();
                 ImageUploader.imageRequired('image', true);
                 $("#imageDlg").dialog('option', 'title', "Ajout d'image");
                 $("#imageDlgOkBtn").text("Ajouter");
                 $("#imageDlg").dialog('open');
             }
-            function editimage(e) {
+            function editImage(e) {
                 holdCheckETag = true;
                 createMode = false;
                 GET_ID(e.target.getAttribute("imageid"), imageToForm, error);
@@ -249,7 +318,7 @@
                 $("#imageDlgOkBtn").text("Modifier");
                 $("#imageDlg").dialog('open');
             }
-            function deleteimage(e) {
+            function deleteImage(e) {
                 holdCheckETag = true;
                 imageIdToDelete = e.target.getAttribute("imageid")
                 GET_ID(
@@ -264,7 +333,7 @@
                 $("#confirmDeleteDlgOkBtn").text("Effacer");
                 $("#confirmDeleteDlg").dialog('open');
             }
-            function resetimageForm() {
+            function resetImageForm() {
                 $("#Id_input").val("0");
                 $("#GUID_input").val("");
                 $("#date_input").val(Date.now());
@@ -300,7 +369,6 @@
 
 
             function init_UI() {
-                $("#newImageCmd").click(newImage)
                 $("#searchCmd").click(e => {
                     hideSearchBar = !hideSearchBar;
                     if (hideSearchBar) {
@@ -327,6 +395,7 @@
                         $("#sortCmd").removeClass("fa-sort-amount-desc");
                     }
                 })
+                $("#newImageCmd").click(newImage)
                 $("#imageDlg").dialog({
                     title: "...",
                     autoOpen: false,
@@ -352,9 +421,137 @@
                                 }
                                 else
                                     PUT(image, getImagesList, error);
-                                resetimageForm();
+                                resetImageForm();
                                 holdCheckETag = false;
                                 $(this).dialog("close");
+                            }
+                        }
+                    },
+                    {
+                        text: "Annuler",
+                        click: function () {
+                            holdCheckETag = false;
+                            $(this).dialog("close");
+                        }
+                    }]
+                });
+
+                $("#emailCmd").click(confirmEmail);
+                $("#emailDlg").dialog({
+                    title: "Vérification de courriel",
+                    autoOpen: false,
+                    modal: true,
+                    show: { effect: 'fade', speed: 400 },
+                    hide: { effect: 'fade', speed: 400 },
+                    width: 400,
+                    minWidth: 400,
+                    maxWidth: 400,
+                    height: 320,
+                    minHeight: 320,
+                    maxHeight: 320,
+                    position: { my: "top", at: "top", of: window },
+                    buttons: [
+                    {
+                        id: "emailDlgOkBtn",
+                        text: "Envoyer",
+                        click: function () {
+                            /*let image = imageFromForm();
+                            if (image) {
+                                if (createMode) {
+                                    POST(image, getImagesList, error);
+                                    $(".scrollContainer").scrollTop(0);
+                                }
+                                else
+                                    PUT(image, getImagesList, error);
+                                resetImageForm();
+                                holdCheckETag = false;
+                                $(this).dialog("close");
+                            }*/
+                        }
+                    },
+                    {
+                        text: "Annuler",
+                        click: function () {
+                            holdCheckETag = false;
+                            $(this).dialog("close");
+                        }
+                    }]
+                });
+
+                $("#loginCmd").click(login);
+                $("#loginDlg").dialog({
+                    title: "Connexion",
+                    autoOpen: false,
+                    modal: true,
+                    show: { effect: 'fade', speed: 400 },
+                    hide: { effect: 'fade', speed: 400 },
+                    width: 400,
+                    minWidth: 400,
+                    maxWidth: 400,
+                    height: 354,
+                    minHeight: 354,
+                    maxHeight: 354,
+                    position: { my: "top", at: "top", of: window },
+                    buttons: [
+                    {
+                        id: "loginDlgOkBtn",
+                        text: "Connexion",
+                        click: function () {
+                            /*let image = imageFromForm();
+                            if (image) {
+                                if (createMode) {
+                                    POST(image, getImagesList, error);
+                                    $(".scrollContainer").scrollTop(0);
+                                }
+                                else
+                                    PUT(image, getImagesList, error);
+                                resetImageForm();
+                                holdCheckETag = false;
+                                $(this).dialog("close");
+                            }*/
+                        }
+                    },
+                    {
+                        text: "Annuler",
+                        click: function () {
+                            holdCheckETag = false;
+                            $(this).dialog("close");
+                        }
+                    }]
+                });
+
+                $("#signUpCmd").click(newProfile)
+                $("#profileCmd").click(editProfile)
+                $("#profileDlg").dialog({
+                    title: "...",
+                    autoOpen: false,
+                    modal: true,
+                    show: { effect: 'fade', speed: 400 },
+                    hide: { effect: 'fade', speed: 400 },
+                    width: 480,
+                    minWidth: 480,
+                    maxWidth: 480,
+                    height: 890,
+                    minHeight: 890,
+                    maxHeight: 890,
+                    position: { my: "top", at: "top", of: window },
+                    buttons: [
+                    {
+                        id: "profileDlgDltBtn",
+                        text: "Désinscrire",
+                        click: function () {
+                            holdCheckETag = false;
+                            $(this).dialog("close");
+                            deleteProfile();
+                        }
+                    },
+                    {
+                        id: "profileDlgOkBtn",
+                        text: "Title will be changed dynamically",
+                        click: function () {
+                            if (creatingProfile) {
+                                $(this).dialog("close");
+                                confirmEmail();
                             }
                         }
                     },
