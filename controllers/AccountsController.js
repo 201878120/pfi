@@ -22,6 +22,7 @@ module.exports =
             }
         }
         // POST: /token body payload[{"Email": "...", "Password": "..."}]
+        // http://localhost:5000/token
         login(loginInfo) {
             let user = this.repository.findByField("Email", loginInfo.Email);
             if (user != null) {
@@ -39,6 +40,7 @@ module.exports =
                 this.HttpContext.response.userNotFound();
             }
         }
+        // http://localhost:5000/accounts/logout/id
         logout(userId) {
             TokenManager.logout(userId);
             this.HttpContext.response.accepted();
@@ -63,7 +65,8 @@ module.exports =
             gmail.send(user.Email, 'Courriel confirmé...', html);
         }
 
-        //GET : /accounts/verify?id=...&code=.....
+        // GET : /accounts/verify?id=...&code=.....
+        // http://localhost:5000/accounts/verify?id=3&code=16954
         verify() {
             let id = parseInt(this.HttpContext.path.params.id);
             let code = parseInt(this.HttpContext.path.params.code);
@@ -86,6 +89,7 @@ module.exports =
         }
 
         // POST: account/register body payload[{"Id": 0, "Name": "...", "Email": "...", "Password": "..."}]
+        // http://localhost:5000/accounts/register
         register(user) {
             user.Created = utilities.nowInSeconds();
             user.VerifyCode = utilities.makeVerifyCode(6);
@@ -102,6 +106,14 @@ module.exports =
                 this.HttpContext.response.unprocessable();
         }
         // PUT:account/modify body payload[{"Id": 0, "Name": "...", "Email": "...", "Password": "..."}]
+        /*
+        {
+            "Id":3,
+            "Name":"PascalAres",//modifié
+            "Email": "pascal.ares@hotmail.fr",
+            "Password":""
+        }
+        */
         modify(user) {
             if (this.writeAuthorization()) {
                 user.Created = utilities.nowInSeconds();
