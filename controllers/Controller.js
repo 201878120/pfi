@@ -1,137 +1,82 @@
-const usersRepository = require('../models/usersRepository');
-const ImagesRepository = require('../models/imagesRepository');
+/////////////////////////////////////////////////////////////////////
+// This module define the base Controller class of all controllers.
+/////////////////////////////////////////////////////////////////////
+// Important note about derived controllers class:
+// They must respect pluralize convention:
+// RessourceNamesController in order to have proper routing
+/////////////////////////////////////////////////////////////////////
+// Author : Nicolas Chourot
+// Lionel-Groulx College
+/////////////////////////////////////////////////////////////////////
 const TokenManager = require('../tokenManager');
-const utilities = require("../utilities");
-const Gmail = require("../gmail");
-
 module.exports =
-    class AccountsController extends require('./Controller') {
-        constructor(HttpContext,) {
-            super(HttpContext, new usersRepository(), true /* read authorisation */);
+    class Controller {
+        constructor(HttpContext, repository = null, needReadAuthorization = false, needWriteAuthorization = true) {
+            // if true, will require a valid bearer token from request header
+            this.needReadAuthorization = needReadAuthorization;
+            this.needWriteAuthorization = needWriteAuthorization;
+            this.HttpContext = HttpContext;
+            this.repository = repository;
         }
-
-        index(id) {
-            if (!isNaN(id)) {
-                this.HttpContext.response.JSON(this.repository.get(id));
-            }
-            else {
-                if (this.readAuthorization())
-                    this.HttpContext.response.JSON(this.repository.getAll());
-                else
-                    this.HttpContext.response.unAuthorized();
-            }
+        readAuthorization() {
+            if (this.needReadAuthorization)
+                return TokenManager.requestAuthorized(this.HttpContext.req)
+            return true
         }
-        // POST: /token body payload[{"Email": "...", "Password": "..."}]
-        // http://localhost:5000/token
-        login(loginInfo) {
-            let user = this.repository.findByField("Email", loginInfo.Email);
-            if (user != null) {
-                if (user.Password == loginInfo.Password) {
-                    if (user.VerifyCode == 'verified') {
-                        let newToken = TokenManager.create(user);
-                        this.HttpContext.response.JSON(newToken);
-                    } else {
-                        this.HttpContext.response.unverifiedUser();
-                    }
-                } else {
-                    this.HttpContext.response.wrongPassword();
-                }
-            } else {
-                this.HttpContext.response.userNotFound();
-            }
+        writeAuthorization() {
+            if (this.needWriteAuthorization)
+                return TokenManager.requestAuthorized(this.HttpContext.req)
+            return true;
         }
-        // http://localhost:5000/accounts/logout/3
-        logout(userId) {
-            TokenManager.logout(userId);
-            this.HttpContext.response.accepted();
-        }
-
-        sendVerificationEmail(user) {
-            let html = `
-                Bonjour ${user.Name}, <br /> <br />
-                Voici votre code vérification :
-                <h3>${user.VerifyCode}</h3>
-            `;
-            const gmail = new Gmail();
-            gmail.send(user.Email, 'Vérification de courriel...', html);
-        }
-
-        sendConfirmedEmail(user) {
-            let html = `
-                Bonjour ${user.Name}, <br /> <br />
-                Votre courriel a été confirmé.
-            `;
-            const gmail = new Gmail();
-            gmail.send(user.Email, 'Courriel confirmé...', html);
-        }
-
-        // GET : /accounts/verify?id=...&code=.....
-        // http://localhost:5000/accounts/verify?id=3&code=16954
-        verify() {
-            let id = parseInt(this.HttpContext.path.params.id);
-            let code = parseInt(this.HttpContext.path.params.code);
-            let userFound = this.repository.findByField('Id', id);
-            if (userFound) {
-                if (userFound.VerifyCode == code) {
-                    userFound.VerifyCode = "verified";
-                    if (this.repository.update(userFound) == 0) {
-                        this.HttpContext.response.ok();
-                        this.sendConfirmedEmail(userFound);
-                    } else {
-                        this.HttpContext.response.unprocessable();
-                    }
-                } else {
-                    this.HttpContext.response.ok();
-                }
-            } else {
-                this.HttpContext.response.unprocessable();
-            }
-        }
-
-        // POST: account/register body payload[{"Id": 0, "Name": "...", "Email": "...", "Password": "..."}]
-        // http://localhost:5000/accounts/register
-        register(user) {
-            user.Created = utilities.nowInSeconds();
-            user.VerifyCode = utilities.makeVerifyCode(6);
-            let newUser = this.repository.add(user);
-            if (newUser) {
-                if (!newUser.conflict) {
-                    // mask password in the json object response 
-                    newUser.Password = "********";
-                    this.HttpContext.response.created(newUser);
-                    this.sendVerificationEmail(user);
-                } else
-                    this.HttpContext.response.conflict();
+        head() {
+            if (this.repository != null) {
+                this.HttpContext.response.ETag(this.repository.ETag);
             } else
-                this.HttpContext.response.unprocessable();
+                this.HttpContext.response.notImplemented();
         }
-        // PUT:account/modify body payload[{"Id": 0, "Name": "...", "Email": "...", "Password": "..."}]
-        /*
-        {
-            "Id":3,
-            "Name":"PascalAres",//modifié
-            "Email": "pascal.ares@hotmail.fr",
-            "Password":""
-        }
-        */
-        modify(user) {
-            if (this.writeAuthorization()) {
-                user.Created = utilities.nowInSeconds();
-                let foundedUser = this.repository.findByField("Id", user.Id);
-                user.VerifyCode = foundedUser.VerifyCode
-                if (user.Password == '') { // password not changed
-                    user.Password = foundedUser.Password;
-                }
+        get(id) {
+            if (this.readAuthorization()) {
                 if (this.repository != null) {
-                    let updateResult = this.repository.update(user);
-                    if (updateResult == this.repository.updateResult.ok) {
-                        this.HttpContext.response.ok();
-                        if (user.Email != foundedUser.Email) {
-                            user.VerifyCode = utilities.makeVerifyCode(6);
-                            this.repository.update(user);
-                            this.sendVerificationEmail(user);
-                        }
+                    if (id !== undefined) {
+                        if (!isNaN(id)) {
+                            let data = this.repository.get(id);
+                            if (data != null)
+                                this.HttpContext.response.JSON(data);
+                            else
+                                this.HttpContext.response.notFound();
+                        } else
+                            this.HttpContext.response.badRequest();
                     }
+                    else
+                        this.HttpContext.response.JSON(this.repository.getAll(this.HttpContext.path.params), this.repository.ETag);
+                }
+                else
+                    this.HttpContext.response.notImplemented();
+            } else
+                this.HttpContext.response.unAuthorized();
+        }
+        post(data) {
+            if (this.writeAuthorization()) {
+                if (this.repository != null) {
+                    data = this.repository.add(data);
+                    if (data) {
+                        if (data.conflict)
+                            this.HttpContext.response.conflict();
+                        else
+                            this.HttpContext.response.created(data);
+                    } else
+                        this.HttpContext.response.unprocessable();
+                } else
+                    this.HttpContext.response.notImplemented();
+            } else
+                this.HttpContext.response.unAuthorized();
+        }
+        put(data) {
+            if (this.writeAuthorization()) {
+                if (this.repository != null) {
+                    let updateResult = this.repository.update(data);
+                    if (updateResult == this.repository.updateResult.ok)
+                        this.HttpContext.response.ok();
                     else
                         if (updateResult == this.repository.updateResult.conflict)
                             this.HttpContext.response.conflict();
@@ -145,8 +90,16 @@ module.exports =
             } else
                 this.HttpContext.response.unAuthorized();
         }
-        // GET:account/remove/id
-        remove(id) { // warning! this is not an API endpoint
-            super.remove(id);
+        remove(id) {
+            if (this.writeAuthorization()) {
+                if (this.repository != null) {
+                    if (this.repository.remove(id))
+                        this.HttpContext.response.accepted();
+                    else
+                        this.HttpContext.response.notFound();
+                } else
+                    this.HttpContext.response.notImplemented();
+            } else
+                this.HttpContext.response.unAuthorized();
         }
     }
