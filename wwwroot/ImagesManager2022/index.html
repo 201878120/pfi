@@ -76,7 +76,7 @@
                     <!-- filled programmatically-->
                 </div>
             </div>
-            <div>
+            <div class="dialogList">
                 <div id="imageDlg">
                     <form id="imageForm">
                         <input type="hidden" id="Id_input" value="0">
@@ -118,7 +118,7 @@
                     </form>
                 </div>
                 <div id="emailDlg">
-                    <span id="confirmationMessage">Consultez votre boîte de courriel pour connaître votre code de vérification et inscrivez-le ci-dessous</span>
+                    <span id="emailMessage">Consultez votre boîte de courriel pour connaître votre code de vérification et inscrivez-le ci-dessous</span>
                     <br>
                     <label for="code_input">Code vérification</label>
                         <input type="text" id="code_input" class="form-control" required>
@@ -135,7 +135,7 @@
                         <input type="checkbox" id="remember_input" required>
                     </form>
                 </div>
-                <div id="confirmDeleteDlg">
+                <div id="confirmDlg">
                     <span id="confirmationMessage"></span>
                 </div>
                 <div id="errorDlg">
@@ -160,13 +160,14 @@
             let hideSearchBar = true;
             let sortAscending = false;
             let creatingProfile = false;
-            let imageIdToDelete = 0; // used by confirmDeleteDlg
+            let imageIdToDelete = 0; // used by confirmDlg
             let selectedCategory = "";
             let imagesCount = 50;
             let appendCount = 3;
             let previousScrollPosition = 0;
             let appendMode = false;
 
+            $(window).resize(function(){updateDialogHeight()})
             init_UI();
             HEAD(checkETag, error);
             setInterval(() => { HEAD(checkETag, error) }, periodicRefreshPeriod * 1000);
@@ -175,6 +176,35 @@
                 if (!holdCheckETag && ETag != currentETag) {
                     currentETag = ETag;
                     getImagesList();
+                }
+            }
+
+            const dlgHeights = {
+                profileDlg : 890,
+                confirmDlg : 230,
+                errorDlg : 230,
+                emailDlg : 320,
+                imageDlg : 780,
+                loginDlg : 354
+            }
+            function initDialogHeight(d) {
+                var h = $(".mainContainer").height();
+                if (h >= dlgHeights[d]) h = dlgHeights[d];
+                $("#" + d).dialog('option', 'height', h);
+                $("#" + d).dialog('option', 'minHeight', h);
+                $("#" + d).dialog('option', 'maxHeight', h);
+            }
+            function updateDialogHeight() {
+                var key = "";
+                for (let data of $("[role=dialog]")) {
+                    if (!$(data).attr("style").includes("display")) key = $(data).attr("aria-describedby");
+                }
+                if (!(typeof key === 'undefined' || key === null)) {
+                    var h = $(".mainContainer").height();
+                    if (h >= dlgHeights[key]) h = dlgHeights[key];
+                    $("#" + key).dialog('option', 'height', h);
+                    $("#" + key).dialog('option', 'minHeight', h);
+                    $("#" + key).dialog('option', 'maxHeight', h);
                 }
             }
 
@@ -274,6 +304,7 @@
 
 
             function login() {
+                initDialogHeight("loginDlg");
                 $("#loginDlg").dialog('open');
             }
             function newProfile() {
@@ -281,9 +312,12 @@
                 $("#profileDlg").dialog('option', 'title', "Création de compte");
                 $("#profileDlgOkBtn").text("Créer");
                 $("#profileDlgDltBtn").hide(0);
+
+                initDialogHeight("profileDlg");            
                 $("#profileDlg").dialog('open');
             }
             function confirmEmail() {
+                initDialogHeight("emailDlg");    
                 $("#emailDlg").dialog('open');
             }
             function editProfile() {
@@ -291,21 +325,28 @@
                 $("#profileDlg").dialog('option', 'title', "Modification de profil");
                 $("#profileDlgOkBtn").text("Ajouter");
                 $("#profileDlgDltBtn").show(0);
+
+                initDialogHeight("profileDlg");    
                 $("#profileDlg").dialog('open');
             }
             function deleteProfile() {
                 $("#confirmDlg").dialog('option', 'title', "Retrait de compte...");
                 $("#confirmationMessage").html("Voulez-vous vraiment effacer votre compte?")
-                $("#confirmDeleteDlgOkBtn").text("Retirer mon compte");
-                $("#confirmDeleteDlg").dialog('open');
+                $("#confirmDlgOkBtn").text("Retirer mon compte");
+
+                initDialogHeight("confirmDlg");  
+                $("#confirmDlg").dialog('open');
             }
             function newImage() {
                 holdCheckETag = true;
                 createMode = true;
                 resetImageForm();
                 ImageUploader.imageRequired('image', true);
+                
                 $("#imageDlg").dialog('option', 'title', "Ajout d'image");
                 $("#imageDlgOkBtn").text("Ajouter");
+
+                initDialogHeight("imageDlg");  
                 $("#imageDlg").dialog('open');
             }
             function editImage(e) {
@@ -316,6 +357,8 @@
                 ImageUploader.imageRequired('image', false);
                 $("#imageDlg").dialog('option', 'title', "Modification d'image");
                 $("#imageDlgOkBtn").text("Modifier");
+
+                initDialogHeight("imageDlg");  
                 $("#imageDlg").dialog('open');
             }
             function deleteImage(e) {
@@ -329,9 +372,10 @@
                     error
                 );
                 holdCheckETag = true;
-                $("#confirmDlg").dialog('option', 'title', "Retrait d'image'...");
-                $("#confirmDeleteDlgOkBtn").text("Effacer");
-                $("#confirmDeleteDlg").dialog('open');
+                $("#confirmDlg").dialog('option', 'title', "Retrait d'image...");
+                $("#confirmDlgOkBtn").text("Effacer");
+                initDialogHeight("confirmDlg");  
+                $("#confirmDlg").dialog('open');
             }
             function resetImageForm() {
                 $("#Id_input").val("0");
@@ -398,6 +442,7 @@
                 $("#newImageCmd").click(newImage)
                 $("#imageDlg").dialog({
                     title: "...",
+                    resizable: false,
                     autoOpen: false,
                     modal: true,
                     show: { effect: 'fade', speed: 400 },
@@ -405,9 +450,9 @@
                     width: 640,
                     minWidth: 640,
                     maxWidth: 640,
-                    height: 780,
-                    minHeight: 780,
-                    maxHeight: 780,
+                    height: "auto",
+                    minHeight: "auto",
+                    maxHeight: "auto",
                     position: { my: "top", at: "top", of: window },
                     buttons: [{
                         id: "imageDlgOkBtn",
@@ -439,6 +484,7 @@
                 $("#emailCmd").click(confirmEmail);
                 $("#emailDlg").dialog({
                     title: "Vérification de courriel",
+                    resizable: false,
                     autoOpen: false,
                     modal: true,
                     show: { effect: 'fade', speed: 400 },
@@ -446,9 +492,9 @@
                     width: 400,
                     minWidth: 400,
                     maxWidth: 400,
-                    height: 320,
-                    minHeight: 320,
-                    maxHeight: 320,
+                    height: "auto",
+                    minHeight: "auto",
+                    maxHeight: "auto",
                     position: { my: "top", at: "top", of: window },
                     buttons: [
                     {
@@ -481,6 +527,7 @@
                 $("#loginCmd").click(login);
                 $("#loginDlg").dialog({
                     title: "Connexion",
+                    resizable: false,
                     autoOpen: false,
                     modal: true,
                     show: { effect: 'fade', speed: 400 },
@@ -488,9 +535,9 @@
                     width: 400,
                     minWidth: 400,
                     maxWidth: 400,
-                    height: 354,
-                    minHeight: 354,
-                    maxHeight: 354,
+                    height: "auto",
+                    minHeight: "auto",
+                    maxHeight: "auto",
                     position: { my: "top", at: "top", of: window },
                     buttons: [
                     {
@@ -524,6 +571,7 @@
                 $("#profileCmd").click(editProfile)
                 $("#profileDlg").dialog({
                     title: "...",
+                    resizable: false,
                     autoOpen: false,
                     modal: true,
                     show: { effect: 'fade', speed: 400 },
@@ -531,9 +579,9 @@
                     width: 480,
                     minWidth: 480,
                     maxWidth: 480,
-                    height: 890,
-                    minHeight: 890,
-                    maxHeight: 890,
+                    height: "auto",
+                    minHeight: "auto",
+                    maxHeight: "auto",
                     position: { my: "top", at: "top", of: window },
                     buttons: [
                     {
@@ -564,17 +612,18 @@
                     }]
                 });
 
-                $("#confirmDeleteDlg").dialog({
+                $("#confirmDlg").dialog({
                     title: "Attention!",
+                    resizable: false,
                     autoOpen: false,
                     modal: true,
                     show: { effect: 'fade', speed: 400 },
                     hide: { effect: 'fade', speed: 400 },
                     width: 500, minWidth: 500, maxWidth: 500,
-                    height: 230, minHeight: 230, maxHeight: 230,
+                    height: "auto", minHeight: "auto", maxHeight: "auto",
                     position: { my: "top", at: "top", of: window },
                     buttons: [{
-                        id: "confirmDeleteDlgOkBtn",
+                        id: "confirmDlgOkBtn",
                         text: "Oui",
                         click: function () {
                             holdCheckETag = false;
@@ -596,12 +645,13 @@
 
                 $("#errorDlg").dialog({
                     title: "Erreur...",
+                    resizable: false,
                     autoOpen: false,
                     modal: true,
                     show: { effect: 'fade', speed: 400 },
                     hide: { effect: 'fade', speed: 400 },
                     width: 500, minWidth: 500, maxWidth: 500,
-                    height: 230, minHeight: 230, maxHeight: 230,
+                    height: "auto", minHeight: "auto", maxHeight: "auto",
                     position: { my: "top", at: "top", of: window },
                     buttons: [{
                         text: "Fermer",
