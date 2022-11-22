@@ -105,20 +105,20 @@
                 </div>
                 <div id="profileDlg">
                     <form id="profileForm">
-                        <label for="username_input">Nom d'usager</label>
-                        <input type="text" id="username_input" class="form-control" required>
+                        <label for="name_profil">Nom d'usager</label>
+                        <input type="text" id="name_profil" class="form-control" required>
 
-                        <label for="email_input">Courriel</label>
-                        <input type="text" id="email_input" class="form-control" required>
+                        <label for="email_profil">Courriel</label>
+                        <input type="text" id="email_profil" class="form-control" required>
 
-                        <label for="password_input">Mot de passe</label>
-                        <input type="text" id="password_input" class="form-control">
+                        <label for="password_profil">Mot de passe</label>
+                        <input type="password" id="password_profil" class="form-control">
 
                         <label for="confirm_input">Confirmation</label>
-                        <input type="text" id="confirm_input" class="form-control">
+                        <input type="password" id="comfirm_profil" class="form-control">
 
-                        <label for="image">Avatar</label>
-                        <div id='image' class='ImageUploader' defaultImage='images/No_Image.png'
+                        <label for="image_profil">Avatar</label>
+                        <div id='image_profil' class='ImageUploader' defaultImage='images/No_Image.png'
                             waitingImage='images/writing.gif'>
                         </div>
                         <div class="note">Cliquez-Déposez une image</div>
@@ -132,14 +132,14 @@
                 </div>
                 <div id="loginDlg">
                     <form id="loginForm">
-                        <label for="email_input">Courriel</label>
-                        <input type="text" id="email_input" class="form-control" required>
+                        <label for="email_login">Courriel</label>
+                        <input type="text" id="email_login" class="form-control" required>
 
-                        <label for="password_input">Mot de passe</label>
-                        <input type="text" id="password_input" class="form-control" required>
+                        <label for="password_login">Mot de passe</label>
+                        <input type="password" id="password_login" class="form-control" required>
 
-                        <label for="remember_input">Se souvenir de moi</label>
-                        <input type="checkbox" id="remember_input" required>
+                        <label for="remember_login">Se souvenir de moi</label>
+                        <input type="checkbox" id="remember_login" required>
                     </form>
                 </div>
                 <div id="confirmDlg">
@@ -177,6 +177,7 @@
             let appendCount = 3;
             let previousScrollPosition = 0;
             let appendMode = false;
+            let Access_token="";
 
             $(window).resize(function(){updateDialogHeight()})
             init_UI();
@@ -284,6 +285,7 @@
                         `)
                     );
                 }
+
                 currentETag = ETag;
                 previousScrollPosition = $(".scrollContainer").scrollTop();
                 if (!appendMode) $("#imagesList").empty();
@@ -580,9 +582,11 @@
                         text: "Connexion",
                         click: function () {
                             switchConnection(true);
-                            let data=getData("#loginDlg");
-                            const ajaxLogin=new Ajax();
-                            ajaxLogin.POST(data,console.log,console.error,"/token");
+                            let data=getData("loginDlg");
+                            let dataFormat=formatData(data,"_login")
+                            getLoginToken(dataFormat)
+                            .then((data)=>Access_token=data.Access_token)
+                            .catch(console.error) ;
                         }
                     },
                     {
