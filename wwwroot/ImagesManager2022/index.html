@@ -37,22 +37,29 @@
                         <span class="header outLinedText tbg-grass">U</span>
                         <span class="header outLinedText tbg-yellow">D</span>
                     </div>
-                    <span>
-                        <span class="cmd fa fa-plus-square" id="newImageCmd" title="Ajouter un image"
-                            data-toggle="tooltip"></span>
-                        <span class="cmd fa fa-id-card" id="profileCmd" title="Voir votre profile"
-                            data-toggle="tooltip"></span>
-                        <span class="cmd fa fa-sign-in" id="loginCmd" title="Connection"
-                            data-toggle="tooltip"></span>
-                        <span class="cmd fa fa-sign-out" id="logoutCmd" title="Déconnection"
-                            data-toggle="tooltip"></span>
-                        <span class="cmd fa fa-user-plus" id="signUpCmd" title="Créer un compte"
-                            data-toggle="tooltip"></span>
-                        <span class="cmd fa fa-search-plus" id="searchCmd" title="Ouvrir la barre de recherche"
-                            data-toggle="tooltip"></span>
-                        <span class="cmd fa fa-sort-amount-asc" id="sortCmd" title="Ordre de date descendante"
-                            data-toggle="tooltip"></span>
-                    </span>
+                    <div class="buttonLayout">
+                        <span class="sideLayout">
+                            <span class="headerButton cmd fa fa-plus-square" id="newImageCmd" title="Ajouter un image"
+                                data-toggle="tooltip"></span>
+                            <span class="headerButton cmd fa fa-search-plus" id="searchCmd" title="Ouvrir la barre de recherche"
+                                data-toggle="tooltip"></span>
+                            <span class="headerButton cmd fa fa-sort-amount-asc" id="sortCmd" title="Ordre de date descendante"
+                                data-toggle="tooltip"></span>
+                        </span>
+                        <div class="sideLayout">
+                            <span id="profileName">Nicolas Chourot</span>
+                            <img id="profileImage" src="images/camera.png" alt="Image profil" data-toggle="tooltip" 
+                                title="Image profil">
+                            <span class="headerButton cmd fa fa-id-card" id="profileCmd" title="Voir votre profile"
+                                data-toggle="tooltip"></span>
+                            <span class="headerButton cmd fa fa-sign-in" id="loginCmd" title="Connection"
+                                data-toggle="tooltip"></span>
+                            <span class="headerButton cmd fa fa-sign-out" id="logoutCmd" title="Déconnection"
+                                data-toggle="tooltip"></span>
+                            <span class="headerButton cmd fa fa-user-plus" id="signUpCmd" title="Créer un compte"
+                                data-toggle="tooltip"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="headerPanel">
@@ -163,6 +170,7 @@
             let hideSearchBar = true;
             let sortAscending = false;
             let creatingProfile = false;
+            let loggedIn = false;
             let imageIdToDelete = 0; // used by confirmDlg
             let selectedCategory = "";
             let imagesCount = 50;
@@ -172,6 +180,7 @@
 
             $(window).resize(function(){updateDialogHeight()})
             init_UI();
+            switchConnection(false);
             HEAD(checkETag, error);
             setInterval(() => { HEAD(checkETag, error) }, periodicRefreshPeriod * 1000);
 
@@ -208,6 +217,27 @@
                     $("#" + key).dialog('option', 'height', h);
                     $("#" + key).dialog('option', 'minHeight', h);
                     $("#" + key).dialog('option', 'maxHeight', h);
+                }
+            }
+
+            function switchConnection(log = false) {
+                loggedIn = log;
+                if (loggedIn) {
+                    $("#newImageCmd").show(0);
+                    $("#profileCmd").show(0);
+                    $("#logoutCmd").show(0);
+                    $("#profileName").show(0);
+                    $("#profileImage").show(0);
+                    $("#loginCmd").hide(0);
+                    $("#signUpCmd").hide(0);
+                } else {
+                    $("#newImageCmd").hide(0);
+                    $("#profileCmd").hide(0);
+                    $("#logoutCmd").hide(0);
+                    $("#profileName").hide(0);
+                    $("#profileImage").hide(0);
+                    $("#loginCmd").show(0);
+                    $("#signUpCmd").show(0);
                 }
             }
 
@@ -416,6 +446,7 @@
 
 
             function init_UI() {
+                $("#logoutCmd").click(e => switchConnection(false));
                 $("#searchCmd").click(e => {
                     hideSearchBar = !hideSearchBar;
                     if (hideSearchBar) {
@@ -548,9 +579,10 @@
                         id: "loginDlgOkBtn",
                         text: "Connexion",
                         click: function () {
+                            switchConnection(true);
                             let data=getData("#loginDlg");
                             const ajaxLogin=new Ajax();
-                            ajaxLogin.POST(data,console.log,console.error,"/token")
+                            ajaxLogin.POST(data,console.log,console.error,"/token");
                         }
                     },
                     {

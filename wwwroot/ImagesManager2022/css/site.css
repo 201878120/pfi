@@ -19,8 +19,29 @@ body {
 }
 .headerLayout {
     display: grid;
-    grid-template-columns: 80px auto auto;
+    width: 100%;
+    grid-template-columns: 80px min-content auto;
     align-items: center;
+}
+.buttonLayout {
+    display: flex;
+    justify-content: space-between;
+    height: 100%;
+    align-items: center;
+}
+.headerButton {
+    vertical-align: middle;
+    margin: 0px 15px;
+}
+#profileImage {
+    vertical-align: middle;
+    height: 60px;
+    width: 60px;
+}
+.profileIcon {
+    border-radius:500px !important;
+    max-height: 100px;
+    background-size: cover !important;
 }
 .headerLayout2 {
     width:100%;
