@@ -21,7 +21,7 @@ class Ajax{
     }
     POST(data, successCallBack, errorCallBack,action="",path="", queryString = null) {
         if(path=="") path=this.#defaultPath;
-        let url = this.#baseURL+ '/' +path+!!action?action+"/":""+"?"+  (queryString ? queryString : "");
+        let url = this.#baseURL+ '/' +path+!!action?'/' +action:""+"?"+  (queryString ? queryString : "");
         $.ajax({
             url: url,
             type: 'POST',

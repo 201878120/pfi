@@ -8,3 +8,29 @@ function getData(idContainer){
     }
     return dictData
 }
+
+async function getLoginToken(data){
+    return new Promise((resolve,reject)=>{
+        let ajax=new Ajax(location.host)
+        ajax.setDefaultPath("");
+        ajax.POST(data,resolve,reject,"token")
+    })
+}
+function formatData(json, removedString, capitalFrist=true){
+    let jsonReturn={};
+    let entriesJson=Object.entries(json)
+    const formatKey=(key)=>{
+        let newKey=key.replace(removedString,"")
+        if(capitalFrist){
+            newKey=newKey.charAt(0).toUpperCase() + newKey.slice(1);
+        }
+        else{
+            newKey=newKey.charAt(0).toLowerCase() + newKey.slice(1);
+        }
+        return newKey;
+    }
+    entriesJson.forEach(data=>{
+        jsonReturn[formatKey(data[0])]=data[1]
+    })
+    return jsonReturn;
+}
