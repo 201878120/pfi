@@ -581,11 +581,13 @@
                         id: "loginDlgOkBtn",
                         text: "Connexion",
                         click: function () {
-                            switchConnection(true);
                             let data=getData("loginDlg");
                             let dataFormat=formatData(data,"_login")
                             getLoginToken(dataFormat)
-                            .then((data)=>Access_token=data.Access_token)
+                            .then((data)=>{
+                                switchConnection(true);
+                                Access_token=data.Access_token
+                            })
                             .catch(console.error) ;
                         }
                     },
