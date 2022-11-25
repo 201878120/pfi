@@ -178,7 +178,7 @@
             let appendCount = 3;
             let previousScrollPosition = 0;
             let appendMode = false;
-            let Access_token="";
+            let userData=[];
 
             $(window).resize(function(){updateDialogHeight()})
             init_UI();
@@ -225,6 +225,9 @@
             function switchConnection(log = false) {
                 loggedIn = log;
                 if (loggedIn) {
+                    $("#profileName").text(userData.Username);
+                    $("#profileImage").attr("src", "../images/profiles/" + userData.AvatarGUID + ".png");
+
                     $("#newImageCmd").show(0);
                     $("#profileCmd").show(0);
                     $("#logoutCmd").show(0);
@@ -233,6 +236,7 @@
                     $("#loginCmd").hide(0);
                     $("#signUpCmd").hide(0);
                 } else {
+                    userData = null;
                     $("#newImageCmd").hide(0);
                     $("#profileCmd").hide(0);
                     $("#logoutCmd").hide(0);
@@ -588,9 +592,13 @@
                             .then((data)=>{
                                 $("#error_login").attr("hidden","hidden")
                                 switchConnection(true);
+                                //Access_token=data.Access_token
+                                userData=data;
+                                
+                                switchConnection(true);
+                                $(this).dialog("close");
+
                                 Access_token=data.Access_token
-                                document.cookie
-                            $(this).dialog("close");
                             })
                             .catch(()=>{
                                 $("#error_login").removeAttr("hidden")

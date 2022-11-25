@@ -34,6 +34,7 @@ body {
     margin: 0px 15px;
 }
 #profileImage {
+    border-radius: 60px !important;
     vertical-align: middle;
     height: 60px;
     width: 60px;
