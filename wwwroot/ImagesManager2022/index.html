@@ -591,10 +591,8 @@
                             getLoginToken(dataFormat)
                             .then((data)=>{
                                 $("#error_login").attr("hidden","hidden")
-                                switchConnection(true);
                                 //Access_token=data.Access_token
                                 userData=data;
-                                
                                 switchConnection(true);
                                 $(this).dialog("close");
                             })
