@@ -27,6 +27,9 @@ module.exports =
             if (user != null) {
                 if (user.Password == loginInfo.Password) {
                     let newToken = TokenManager.create(user);
+                    if(loginInfo["Remember"]){
+                        newToken.Password=user.Password;
+                    }
                     this.HttpContext.response.JSON(newToken);
                 } else {
                     this.HttpContext.response.wrongPassword();
