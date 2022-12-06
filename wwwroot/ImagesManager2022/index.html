@@ -70,9 +70,9 @@
                                 <!-- filled programmatically-->
                             </select>
                             <span> <!-- skip a column --> </span>
-                            <input type="search" id="searchKeyword" class="form-control" placeholder="Recherche par mots-clés" />
+                            <input type="search" value="" id="searchKeyword" class="form-control" placeholder="Recherche par mots-clés" />
                             <span> <!-- skip a column --> </span>
-                            <span class="cmd fa fa-search"></span>
+                            <span id="searchButton" class="cmd fa fa-search"></span>
                         </div>
                     </div>
                 </div>
@@ -179,6 +179,8 @@
             let previousScrollPosition = 0;
             let appendMode = false;
             let userData=[];
+            let idUserDictionary = {};
+            let userListInitiated = false;
 
             $(window).resize(function(){updateDialogHeight()})
             init_UI();
@@ -249,21 +251,48 @@
 
             function getImagesList(refresh = true) {
                 appendMode = !refresh;
+                sortMethod = "desc"
+                includeId = "";
+
+                if (sortAscending) sortMethod = "asc";
+                if (!($("#searchUser").val() == 0)) includeId = "&UserId=" + $("#searchUser").val();
+                
                 function prepareQueryString() {
                     let queryString = "";
                     if (appendMode) {
-                        queryString = `?sort=Date,desc&offset=${Math.trunc(imagesCount / appendCount)}&limit=${appendCount}`;
+                        queryString = `?sort=Date,${sortMethod}&offset=${Math.trunc(imagesCount / appendCount)}&limit=${appendCount}${includeId}`;
                         imagesCount += appendCount;
                     } else {
-                        queryString = `?sort=Date,desc&offset=${0}&limit=${imagesCount}`;
+                        queryString = `?sort=Date,${sortMethod}&offset=${0}&limit=${imagesCount}${includeId}`;
                     }
                     return queryString;
                 }
-                GET_ALL(refreshimagesList, error, prepareQueryString());
+                if (!userListInitiated) {
+                    userListInitiated = true;
+                    idUserDictionary = {};
+                    $("#searchUser").empty();
+                    GET_ALL(refreshUsersList, error, prepareQueryString());
+                }
+                GET_ALL(refreshImagesList, error, prepareQueryString());
             }
-            function refreshimagesList(images, ETag) {
+            function refreshUsersList(images, ETag) {
+                $("#searchUser").append(
+                    $(`<option value="0">Tout les utilisateurs</option>`)
+                );
+                for (let image of images) {
+                    GET_USERNAME(image.UserId, addUserToSearch, error);
+                }
+            }
+            function addUserToSearch(id, name) {
+                if (!(id in idUserDictionary)) {
+                    idUserDictionary[id] = name;
+                    $("#searchUser").append(
+                        $(`<option value="${id}">${name}</option>`)
+                    );
+                }
+            }
+            function refreshImagesList(images, ETag) {
                 function insertIntoImageList(image) {
-
                     $("#imagesList").append(
                         $(` 
                                 <div class='imageLayout'>
@@ -295,11 +324,14 @@
                 previousScrollPosition = $(".scrollContainer").scrollTop();
                 if (!appendMode) $("#imagesList").empty();
 
-                if (appendMode && images.length == 0)
-                    imagesCount -= appendCount;
+                if (appendMode && images.length == 0) imagesCount -= appendCount;
 
                 for (let image of images) {
-                    insertIntoImageList(image);
+                    if ($("#searchKeyword").val() == "") {
+                        insertIntoImageList(image);
+                    } else {
+                        if ((image.Title.indexOf($("#searchKeyword").val()) == -1) && (image.Description.indexOf($("#searchKeyword").val()) == -1)) insertIntoImageList(image);
+                    }
                 }
 
                 $(".scrollContainer").scrollTop(previousScrollPosition);
@@ -454,6 +486,7 @@
 
             function init_UI() {
                 $("#logoutCmd").click(e => switchConnection(false));
+                $("#searchButton").click(e => getImagesList());
                 $("#searchCmd").click(e => {
                     hideSearchBar = !hideSearchBar;
                     if (hideSearchBar) {
@@ -479,6 +512,7 @@
                         $("#sortCmd").addClass("fa-sort-amount-asc");
                         $("#sortCmd").removeClass("fa-sort-amount-desc");
                     }
+                    getImagesList(true);
                 })
                 $("#newImageCmd").click(newImage)
                 $("#imageDlg").dialog({
