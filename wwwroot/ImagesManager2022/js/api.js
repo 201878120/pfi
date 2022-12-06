@@ -1,5 +1,5 @@
-const apiBaseURL = "http://localhost:5000/api/images";
-const userURL = "http://localhost:5000/api/accounts";
+const apiBaseURL = `http://${location.host}/api/images`;
+const userURL = `http://${location.host}/api/accounts`;
 
 function HEAD(successCallBack, errorCallBack) {
     $.ajax({

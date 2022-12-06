@@ -9,12 +9,13 @@ class Ajax{
         if(typeof newPath === 'string') this.#defaultPath=newPath;
         else throw new Error("le nouveau chemin doit être une chaine de caractaire")
     }
-    GET(successCallBack, errorCallBack,action="",path="", queryString = null) {
+    GET(successCallBack, errorCallBack,action="",path="", queryString = null,header={}) {
         if(path=="") path=this.#defaultPath;
         let url = this.#baseURL+ '/' + path +!!action?action+"/":""+"?"+ (queryString ? queryString : "");
         $.ajax({
             url: url,
             type: 'GET',
+            headers:header,
             success: (data, status, xhr) => { successCallBack(data/*, xhr.getResponseHeader("ETag")*/) },
             error: function (jqXHR) { errorCallBack(jqXHR.status) }
         });

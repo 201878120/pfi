@@ -9,6 +9,7 @@ module.exports =
             if (user) {
                 token.Id = 0;
                 token.Access_token = makeToken(user.Email);
+                token.Email=user.Email;
                 token.UserId = user.Id;
                 token.Username = user.Name;
                 token.AvatarGUID = user.AvatarGUID;

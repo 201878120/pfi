@@ -105,6 +105,8 @@
                 </div>
                 <div id="profileDlg">
                     <form id="profileForm">
+                        
+                        <input type="hidden" id="GUID_input_profil" value="">
                         <label for="name_profil">Nom d'usager</label>
                         <input type="text" id="name_profil" class="form-control" required>
 
@@ -133,6 +135,7 @@
                 <div id="loginDlg">
                     <div id="error_login" class="error" hidden> Authentification Invalide</div>
                     <form id="loginForm" action="">
+                        
                         <label for="email_login">Courriel</label>
                         <input type="text" id="email_login" class="form-control" required>
 
@@ -159,6 +162,7 @@
         <script src="js/api.js"></script>
         <script src="js/date.js"></script>
         <script src="js/ajax.js"></script>
+        <script src="js/cookie.js"></script>
         <script src="js/dialogUtilities.js"></script>
         
         <script defer>
@@ -377,6 +381,12 @@
 
             function login() {
                 initDialogHeight("loginDlg");
+                $("#email_login").val(localStorage.getItem("Email"))
+                $("#password_login").val(localStorage.getItem("Password"))
+                if(!!localStorage.getItem("Email")){
+                    $("remember_login").attr("checked",true)
+                }
+                localStorage.getItem("Password")
                 $("#loginDlg").dialog('open');
             }
             function newProfile() {
@@ -395,6 +405,14 @@
             function editProfile() {
                 creatingProfile = false;
                 $("#profileDlg").dialog('option', 'title', "Modification de profil");
+                $("#name_profil").val(userData["Username"])
+                $("#email_profil").val(userData["Email"])
+                $("#GUID_input_profil").val(userData["AvatarGUID"]);
+                
+                $("#GUID_input").val(userData["AvatarGUID"]);
+                ImageUploader.setImage('image', "http://localhost:5000/images/"+userData["AvatarGUID"]);
+                holdCheckETag = true;
+
                 $("#profileDlgOkBtn").text("Ajouter");
                 $("#profileDlgDltBtn").show(0);
 
@@ -414,7 +432,6 @@
                 createMode = true;
                 resetImageForm();
                 ImageUploader.imageRequired('image', true);
-                
                 $("#imageDlg").dialog('option', 'title', "Ajout d'image");
                 $("#imageDlgOkBtn").text("Ajouter");
 
@@ -623,12 +640,22 @@
                             let data=getData("loginDlg");
                             let dataFormat=formatData(data,"_login")
                             getLoginToken(dataFormat)
+
                             .then((data)=>{
                                 $("#error_login").attr("hidden","hidden")
                                 //Access_token=data.Access_token
                                 userData=data;
+                                if(!!userData.Password){
+                                    localStorage.setItem("Email")
+                                    localStorage.setItem("Password")
+                                }
+                                else{
+                                    localStorage.removeItem('Email');
+                                    localStorage.removeItem('Password');
+                                }
                                 switchConnection(true);
                                 $(this).dialog("close");
+                                $("input").val("")
                             })
                             .catch(()=>{
                                 $("#error_login").removeAttr("hidden")
