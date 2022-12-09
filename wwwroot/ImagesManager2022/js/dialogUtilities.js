@@ -13,7 +13,19 @@ async function getLoginToken(data){
     return new Promise((resolve,reject)=>{
         let ajax=new Ajax(location.host)
         ajax.setDefaultPath("");
-        ajax.POST(data,resolve,reject,"token")
+        ajax.POST(data,(d)=>{
+            if(data.Remember){
+                localStorage.setItem("email",data.Email);
+                localStorage.setItem("password",data.Password);
+                localStorage.setItem("remember",data.Remember);
+            }
+            else{
+                localStorage.removeItem("email")
+                localStorage.removeItem("password")
+                localStorage.removeItem("remember")
+            }
+            resolve(d);
+        },reject,"token")
     })
 }
 function formatData(json, removedString, capitalFrist=true){
@@ -33,4 +45,8 @@ function formatData(json, removedString, capitalFrist=true){
         jsonReturn[formatKey(data[0])]=data[1]
     })
     return jsonReturn;
+}
+function resetForm(idForm){
+    $(`#${idForm} input`).val("")
+    
 }
