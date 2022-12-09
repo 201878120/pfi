@@ -184,7 +184,6 @@
             let appendMode = false;
             let userData=[];
             let idUserDictionary = {};
-            let userListInitiated = false;
 
             $(window).resize(function(){updateDialogHeight()})
             init_UI();
@@ -251,6 +250,7 @@
                     $("#loginCmd").show(0);
                     $("#signUpCmd").show(0);
                 }
+                getImagesList(true);
             }
 
             function getImagesList(refresh = true) {
@@ -271,20 +271,15 @@
                     }
                     return queryString;
                 }
-                if (!userListInitiated) {
-                    userListInitiated = true;
-                    idUserDictionary = {};
-                    $("#searchUser").empty();
-                    GET_ALL(refreshUsersList, error, prepareQueryString());
-                }
+                GET_ALL(refreshUsersList, error, prepareQueryString());
                 GET_ALL(refreshImagesList, error, prepareQueryString());
             }
             function refreshUsersList(images, ETag) {
-                $("#searchUser").append(
-                    $(`<option value="0">Tout les utilisateurs</option>`)
-                );
+                $("#searchUser").empty();
+                idUserDictionary = {};
+                $("#searchUser").append($(`<option value="0">Tout les utilisateurs</option>`));
                 for (let image of images) {
-                    GET_USERNAME(image.UserId, addUserToSearch, error);
+                    addUserToSearch(image.UserId, image.UserName)
                 }
             }
             function addUserToSearch(id, name) {
@@ -300,6 +295,9 @@
                     $("#imagesList").append(
                         $(` 
                                 <div class='imageLayout'>
+                                    <div style="position:relative">
+                                        <img class="imageProfileImage" src="../images/profiles/${image.AvatarGUID}.png" alt="${image.UserName}" data-toggle="tooltip" title="${image.UserName}">
+                                    </div>
                                     <div class='imageHeader'>
                                         <div class="imageTitle">${image.Title}</div>
                                         <div    class="cmd editCmd  fa fa-pencil-square" 
@@ -331,10 +329,13 @@
                 if (appendMode && images.length == 0) imagesCount -= appendCount;
 
                 for (let image of images) {
-                    if ($("#searchKeyword").val() == "") {
-                        insertIntoImageList(image);
-                    } else {
-                        if ((image.Title.indexOf($("#searchKeyword").val()) == -1) && (image.Description.indexOf($("#searchKeyword").val()) == -1)) insertIntoImageList(image);
+                    if (($("#searchKeyword").val() == "") || (!((image.Title.indexOf($("#searchKeyword").val()) == -1) && (image.Description.indexOf($("#searchKeyword").val())) == -1))) {
+                        var showImage = true;
+                        var author = false;
+                        if (loggedIn) if (image.UserId == userData.UserId) author = true;
+                        if (image.Shared) if (author) image.AvatarGUID = "shared";
+                        else if (!author) showImage = false;
+                        if (showImage) insertIntoImageList(image);
                     }
                 }
 

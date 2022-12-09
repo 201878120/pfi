@@ -1,6 +1,6 @@
 
  // Attention de ne pas avoir des références circulaire
- // const UsersRepository = require('./usersRepository'); pas ici sinon référence ciculaire
+const UsersRepository = require('./usersRepository');
 const ImageFilesRepository = require('./imageFilesRepository.js');
 const ImageModel = require('./image.js');
 const utilities = require("../utilities");
@@ -11,6 +11,7 @@ module.exports =
         constructor() {
             super(new ImageModel(), true /* cached */);
             this.setBindExtraDataMethod(this.bindImageURL);
+            this.usersRepository = new UsersRepository();
         }
         bindImageURL(image) {
             if (image) {
@@ -22,6 +23,11 @@ module.exports =
                     bindedImage["OriginalURL"] = "";
                     bindedImage["ThumbnailURL"] = "";
                 }
+                if (image["UserId"] != "") {
+                    let user = this.usersRepository.get(image["UserId"]);
+                    bindedImage["UserName"] = user.Name;
+                    bindedImage["AvatarGUID"] = user.AvatarGUID;
+                } 
                 return bindedImage;
             }
             return null;

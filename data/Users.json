@@ -13,9 +13,8 @@
         "Name": "Nicolas Chourot",
         "Email": "nicolaschourot@videotron.ca",
         "Password": "********",
-        "Created": 1666908912,
-        "VerifyCode": "verified",
         "AvatarGUID": "",
-        "AvatarURL": ""
+        "VerifyCode": "verified",
+        "Created": 1666908912
     }
 ]

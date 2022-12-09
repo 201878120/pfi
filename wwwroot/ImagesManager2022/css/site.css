@@ -39,6 +39,20 @@ body {
     height: 60px;
     width: 60px;
 }
+.imageProfileImage {
+    position: absolute;
+    top: 40px;
+    left: 8px;
+    border-radius: 52px !important;
+    vertical-align: middle;
+    background-color: lightgray;
+    border-radius: 52px;
+    border-width: 2px;
+    border-color: black;
+    border-style:solid;
+    height: 52px;
+    width: 52px;
+}
 .profileIcon {
     border-radius:500px !important;
     max-height: 100px;
