@@ -1,4 +1,5 @@
 const apiBaseURL = `http://${location.host}/api/images`;
+const userURL = `http://${location.host}/api/accounts`;
 
 function HEAD(successCallBack, errorCallBack) {
     $.ajax({
@@ -14,6 +15,15 @@ function GET_ID(id, successCallBack, errorCallBack) {
         url: apiBaseURL + "/" + id,
         type: 'GET',
         success: data => { successCallBack(data); },
+        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+    });
+}
+function GET_USERNAME(id, successCallBack, errorCallBack) {
+    console.log(id);
+    $.ajax({
+        url: userURL + "/" + id,
+        type: 'GET',
+        success: data => { successCallBack(id, data.Name); },
         error: function (jqXHR) { errorCallBack(jqXHR.status) }
     });
 }

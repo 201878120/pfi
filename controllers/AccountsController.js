@@ -7,7 +7,7 @@ const Gmail = require("../gmail");
 module.exports =
     class AccountsController extends require('./Controller') {
         constructor(HttpContext,) {
-            super(HttpContext, new usersRepository(), true /* read authorisation */);
+            super(HttpContext, new usersRepository(), false /* read authorisation */);
         }
 
         index(id) {
