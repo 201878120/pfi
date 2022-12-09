@@ -106,9 +106,9 @@
                 <div id="profileDlg">
                     <form id="profileForm">
                         
-                        <input type="hidden" id="GUID_input_profil" value="">
                         <label for="name_profil">Nom d'usager</label>
                         <input type="text" id="name_profil" class="form-control" required>
+                        <input type="hidden" id="GUID_profil" value="">
 
                         <label for="email_profil">Courriel</label>
                         <input type="text" id="email_profil" class="form-control" required>
@@ -116,10 +116,10 @@
                         <label for="password_profil">Mot de passe</label>
                         <input type="password" id="password_profil" class="form-control">
 
-                        <label for="confirm_input">Confirmation</label>
+                        <label for="comfirm_profil">Confirmation</label>
                         <input type="password" id="comfirm_profil" class="form-control">
 
-                        <label for="image_profil">Avatar</label>
+                        <label for="image_profil">Image</label>
                         <div id='image_profil' class='ImageUploader' defaultImage='images/No_Image.png'
                             waitingImage='images/writing.gif'>
                         </div>
@@ -190,7 +190,6 @@
             switchConnection(false);
             HEAD(checkETag, error);
             setInterval(() => { HEAD(checkETag, error) }, periodicRefreshPeriod * 1000);
-
             function checkETag(ETag) {
                 if (!holdCheckETag && ETag != currentETag) {
                     currentETag = ETag;
@@ -382,12 +381,11 @@
 
             function login() {
                 initDialogHeight("loginDlg");
-                $("#email_login").val(localStorage.getItem("Email"))
-                $("#password_login").val(localStorage.getItem("Password"))
-                if(!!localStorage.getItem("Email")){
-                    $("remember_login").attr("checked",true)
+                $("#email_login").val(localStorage.getItem("email"))
+                $("#password_login").val(localStorage.getItem("password"))
+                if(!!localStorage.getItem("remember")){
+                    $("#remember_login").attr("checked",true)
                 }
-                localStorage.getItem("Password")
                 $("#loginDlg").dialog('open');
             }
             function newProfile() {
@@ -403,15 +401,15 @@
                 initDialogHeight("emailDlg");    
                 $("#emailDlg").dialog('open');
             }
+            /////////////////////////////////////////////////////////
             function editProfile() {
                 creatingProfile = false;
                 $("#profileDlg").dialog('option', 'title', "Modification de profil");
                 $("#name_profil").val(userData["Username"])
                 $("#email_profil").val(userData["Email"])
-                $("#GUID_input_profil").val(userData["AvatarGUID"]);
                 
-                $("#GUID_input").val(userData["AvatarGUID"]);
-                ImageUploader.setImage('image', "http://localhost:5000/images/"+userData["AvatarGUID"]);
+                $("#GUID_profil").val("profiles/"+userData["AvatarGUID"]);
+                ImageUploader.setImage('image_profil', "http://localhost:5000/images/profiles/"+userData["AvatarGUID"]+".png");
                 holdCheckETag = true;
 
                 $("#profileDlgOkBtn").text("Ajouter");
@@ -439,6 +437,7 @@
                 initDialogHeight("imageDlg");  
                 $("#imageDlg").dialog('open');
             }
+            /////////////////////////////////////////////
             function editImage(e) {
                 holdCheckETag = true;
                 createMode = false;
