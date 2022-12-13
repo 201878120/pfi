@@ -147,6 +147,13 @@ body {
     /* 600 X 0,57333 ratio */
     border: 1px solid lightgray;
 }
+.ImageDisplayer {
+    align-items: center;
+    width: 100%;
+    height: 344px;
+    /* 600 X 0,57333 ratio */
+    border: 1px solid lightgray;
+}
 .ui-dialog #avatar {
     border: 0px solid white;
     width: 255px !important;
@@ -185,6 +192,7 @@ textarea2 {
     color: blue;
 }
 .image {
+    cursor: pointer;
     height: 220px;
     background-size: cover;
     background-position: center;
@@ -212,9 +220,15 @@ textarea2 {
 .imageLayout:hover .cmd {
     display: inline-block;
 }
+.imageLayout .spacing {
+    display: none;
+}
+.imageLayout:hover .spacing {
+    display: inline-block;
+}
 .imageLayout:hover .imageHeader {
     display: grid;
-    grid-template-columns: auto 35px 35px;
+    grid-template-columns: auto min-content min-content min-content;
 }
 .imageTitle {
     font-size: 20px;
