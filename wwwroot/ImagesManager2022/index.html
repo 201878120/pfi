@@ -119,8 +119,8 @@
                         <label for="comfirm_profil">Confirmation</label>
                         <input type="password" id="comfirm_profil" class="form-control">
 
-                        <label for="image_profil">Image</label>
-                        <div id='image_profil' class='ImageUploader' defaultImage='images/No_Image.png'
+                        <label for="imageProfil">Image</label>
+                        <div id='imageProfil' class='ImageUploader' defaultImage='images/No_Image.png'
                             waitingImage='images/writing.gif'>
                         </div>
                         <div class="note">Cliquez-Déposez une image</div>
@@ -389,8 +389,10 @@
                 $("#loginDlg").dialog('open');
             }
             function newProfile() {
+                holdCheckETag = true;
                 creatingProfile = true;
                 $("#profileDlg").dialog('option', 'title', "Création de compte");
+                resetProfileForm();
                 $("#profileDlgOkBtn").text("Créer");
                 $("#profileDlgDltBtn").hide(0);
 
@@ -402,18 +404,28 @@
                 $("#emailDlg").dialog('open');
             }
             /////////////////////////////////////////////////////////
-            function editProfile() {
-                creatingProfile = false;
-                $("#profileDlg").dialog('option', 'title', "Modification de profil");
+            function resetProfileForm(){
+                $("#name_profil").val("");
+                $("#email_profil").val("");
+                $("#password_profil").val("");
+                $("#comfirm_profil").val("");
+                ImageUploader.resetImage('imageProfil');
+            }
+            function profileToForm(userData){
                 $("#name_profil").val(userData["Username"])
                 $("#email_profil").val(userData["Email"])
-                
                 $("#GUID_profil").val("profiles/"+userData["AvatarGUID"]);
-                ImageUploader.setImage('image_profil', "http://localhost:5000/images/profiles/"+userData["AvatarGUID"]+".png");
-                holdCheckETag = true;
 
-                $("#profileDlgOkBtn").text("Ajouter");
-                $("#profileDlgDltBtn").show(0);
+                ImageUploader.setImage('imageProfil', "http://localhost:5000/images/profiles/"+userData["AvatarGUID"]+".png");
+
+            }
+            function editProfile() {
+                holdCheckETag = true;
+                createMode = false;
+                profileToForm(userData)
+                ImageUploader.imageRequired('image', true);
+                $("#profileDlg").dialog('option', 'title', "Modification de profil");
+                $("#profileDlgOkBtn").text("Modifier");
 
                 initDialogHeight("profileDlg");    
                 $("#profileDlg").dialog('open');
@@ -702,10 +714,32 @@
                         id: "profileDlgOkBtn",
                         text: "Title will be changed dynamically",
                         click: function () {
-                            if (creatingProfile) {
-                                $(this).dialog("close");
+                            if (creatingProfile || userData.Email!=$("#email_profil").val()) {
                                 confirmEmail();
                             }
+
+                            if($("#password_profil").val()==$("#comfirm_profil").val()){
+                                let ajaxProfil=new Ajax()
+                                ajaxProfil.setDefaultPath("account")
+                                let data=
+                                {
+                                    "Id": userData.UserId,
+                                    "Name": $("#name_profil").val(),
+                                    "Email": $("#email_profil").val(),
+                                    "Password": $("#password_profil").val(),
+                                    "Access_token":userData.Access_token
+                                }
+                                
+                                let dataImage=$("#imageProfil_ImageContainer").css("background-image").
+                                replace(["url"],"").replace("(","").replace(")","").replaceAll('"',"")
+                                if(dataImage!='http://localhost:5000/ImagesManager2022/images/No_Image.png'){
+                                    data.data=dataImage;
+                                }
+                                ajaxProfil.PUT(JSON.stringify(data),console.log,console.error,"modify");
+
+                                $(this).dialog("close");
+                            }
+                            
                         }
                     },
                     {

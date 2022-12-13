@@ -25,6 +25,8 @@ module.exports =
                 }
                 if (image["UserId"] != "") {
                     let user = this.usersRepository.get(image["UserId"]);
+                    if( user.Name ==null)
+                        debugger
                     bindedImage["UserName"] = user.Name;
                     bindedImage["AvatarGUID"] = user.AvatarGUID;
                 } 

@@ -34,7 +34,8 @@ class Ajax{
     }
     PUT(data, successCallBack, errorCallBack,action="",path="", queryString = null) {
         if(path=="") path=this.#defaultPath;
-        let url = this.#baseURL+ '/' +path+"?"+!!action?action+"/":""+ (queryString ? queryString : "");
+        let url = "http://"+this.#baseURL+ '/' +path+"/"+(!!action?action+"/":""+ (queryString ? "?"+queryString : ""))
+        //console.log(url)
         $.ajax({
             url: url,
             type: 'PUT',
