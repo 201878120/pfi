@@ -100,7 +100,10 @@
                         <div id='image' class='ImageUploader' defaultImage='images/No_Image.png'
                             waitingImage='images/writing.gif'>
                         </div>
-                        <div class="note">Cliquez-Déposez une image</div>
+                        <div id="label_uploader" class="note">Cliquez-Déposez une image</div>
+
+                        <label id="label_share" for="check_share">Partager l'image?</label>
+                        <input type="checkbox" id="check_share" required>
                     </form>
                 </div>
                 <div id="profileDlg">
@@ -170,6 +173,7 @@
             let holdCheckETag = false;
             let currentETag = "";
             let createMode = true;
+            let displayMode = false;
             let searchCategory = "";
             let searchTitle = "";
             let hideSearchBar = true;
@@ -184,6 +188,31 @@
             let appendMode = false;
             let userData=[];
             let idUserDictionary = {};
+            let imageDlgButtons = [{
+                        id: "imageDlgOkBtn",
+                        text: "Title will be changed dynamically",
+                        click: function () {
+                            let image = imageFromForm();
+                            if (image) {
+                                if (createMode) {
+                                    POST(image, getImagesList, error);
+                                    $(".scrollContainer").scrollTop(0);
+                                }
+                                else
+                                    PUT(image, getImagesList, error);
+                                resetImageForm();
+                                holdCheckETag = false;
+                                $(this).dialog("close");
+                            }
+                        }
+                    },
+                    {
+                        text: "Annuler",
+                        click: function () {
+                            holdCheckETag = false;
+                            $(this).dialog("close");
+                        }
+                    }];
 
             $(window).resize(function(){updateDialogHeight()})
             init_UI();
@@ -202,12 +231,12 @@
                 confirmDlg : 230,
                 errorDlg : 230,
                 emailDlg : 320,
-                imageDlg : 780,
+                imageDlg : 790,
                 loginDlg : 400
             }
-            function initDialogHeight(d) {
+            function initDialogHeight(d, offset = 0) {
                 var h = $(".mainContainer").height();
-                if (h >= dlgHeights[d]) h = dlgHeights[d];
+                if (h >= (dlgHeights[d]+offset)) h = (dlgHeights[d]+offset);
                 $("#" + d).dialog('option', 'height', h);
                 $("#" + d).dialog('option', 'minHeight', h);
                 $("#" + d).dialog('option', 'maxHeight', h);
@@ -290,7 +319,20 @@
                 }
             }
             function refreshImagesList(images, ETag) {
-                function insertIntoImageList(image) {
+                function insertIntoImageList(image, author) {
+                    var modControls = ``;
+                    if (author) modControls = 
+                    `<div class="cmd editCmd  fa fa-pencil-square" 
+                        imageid="${image.Id}" 
+                        title="Modifier ${image.Title}" 
+                        data-toggle="tooltip">
+                    </div> 
+                    <div class="spacing">⠀</div>
+                    <div class="cmd deleteCmd fa fa-window-close" 
+                        imageid="${image.Id}" 
+                        title="Effacer ${image.Title}" 
+                        data-toggle="tooltip">
+                    </div>`;
                     $("#imagesList").append(
                         $(` 
                                 <div class='imageLayout'>
@@ -298,23 +340,14 @@
                                         <img class="imageProfileImage" src="../images/profiles/${image.AvatarGUID}.png" alt="${image.UserName}" data-toggle="tooltip" title="${image.UserName}">
                                     </div>
                                     <div class='imageHeader'>
-                                        <div class="imageTitle">${image.Title}</div>
-                                        <div    class="cmd editCmd  fa fa-pencil-square" 
-                                                imageid="${image.Id}" 
-                                                title="Editer ${image.Title}" 
-                                                data-toggle="tooltip">
-                                        </div>
-                                        <div    class="cmd deleteCmd fa fa-window-close" 
-                                                imageid="${image.Id}" 
-                                                title="Effacer ${image.Title}" 
-                                                data-toggle="tooltip">
-                                        </div>
+                                        <div class="imageTitle">${image.Title}</div>${modControls}
                                     </div>
-                                    <a href="${image.OriginalURL}" target="_blank">
-                                        <div    class='image' 
-                                                style="background-image:url('${image.ThumbnailURL}')">
-                                        </div>
-                                    </a>
+                                    <div class='showImageCmd image'
+                                        imageid="${image.Id}" 
+                                        title="${image.Title}" 
+                                        data-toggle="tooltip" 
+                                        style="background-image:url('${image.ThumbnailURL}')">
+                                    </div>
                                     <div class="imageDate">${convertToFrenchDate(parseInt(image.Date))}</div>
                                 </div>
                         `)
@@ -334,7 +367,7 @@
                         if (loggedIn) if (image.UserId == userData.UserId) author = true;
                         if (image.Shared) if (author) image.AvatarGUID = "shared";
                         else if (!author) showImage = false;
-                        if (showImage) insertIntoImageList(image);
+                        if (showImage) insertIntoImageList(image, author);
                     }
                 }
 
@@ -342,6 +375,7 @@
                 $(".editCmd").off();
                 $(".deleteCmd").off();
                 $(".showMore").off();
+                $(".showImageCmd").click(e => { getImageDetails(e) });
                 $(".editCmd").click(e => { editImage(e) });
                 $(".deleteCmd").click(e => { deleteImage(e) });
 
@@ -432,12 +466,33 @@
                 resetImageForm();
                 ImageUploader.imageRequired('image', true);
                 $("#imageDlg").dialog('option', 'title', "Ajout d'image");
-                $("#imageDlgOkBtn").text("Ajouter");
+                $("#imageDlg").dialog('option', 'buttons', imageDlgButtons);
+                $("#check_share").show(0);
+                $("#label_share").show(0);
+                $("#label_uploader").show(0);
+                $("#description_input").prop("readonly", false);
+                $("#title_input").prop("readonly", false);
+                $("#image_ImageUploader").removeAttr('disabled');
 
+                $("#imageDlgOkBtn").text("Ajouter");
                 initDialogHeight("imageDlg");  
                 $("#imageDlg").dialog('open');
             }
-            /////////////////////////////////////////////
+            function getImageDetails(e) {
+                createMode = false;
+                GET_ID(e.target.getAttribute("imageid"), imageToForm, error);
+                $("#imageDlg").dialog('option', 'title', "Détails de l'image");
+                $("#imageDlg").dialog('option', 'buttons', []);
+                $("#check_share").hide(0);
+                $("#label_share").hide(0);
+                $("#label_uploader").hide(0);
+                $("#description_input").prop("readonly", true);
+                $("#title_input").prop("readonly", true);
+                $("#image_ImageUploader").attr('disabled','disabled');
+
+                initDialogHeight("imageDlg", -135);  
+                $("#imageDlg").dialog('open');
+            }
             function editImage(e) {
                 holdCheckETag = true;
                 createMode = false;
@@ -445,8 +500,15 @@
                 holdCheckETag = true;
                 ImageUploader.imageRequired('image', false);
                 $("#imageDlg").dialog('option', 'title', "Modification d'image");
-                $("#imageDlgOkBtn").text("Modifier");
+                $("#imageDlg").dialog('option', 'buttons', imageDlgButtons);
+                $("#check_share").show(0);
+                $("#label_share").show(0);
+                $("#label_uploader").show(0);
+                $("#description_input").prop("readonly", false);
+                $("#title_input").prop("readonly", false);
+                $("#image_ImageUploader").removeAttr('disabled');
 
+                $("#imageDlgOkBtn").text("Modifier");
                 initDialogHeight("imageDlg");  
                 $("#imageDlg").dialog('open');
             }
@@ -546,31 +608,7 @@
                     minHeight: "auto",
                     maxHeight: "auto",
                     position: { my: "top", at: "top", of: window },
-                    buttons: [{
-                        id: "imageDlgOkBtn",
-                        text: "Title will be changed dynamically",
-                        click: function () {
-                            let image = imageFromForm();
-                            if (image) {
-                                if (createMode) {
-                                    POST(image, getImagesList, error);
-                                    $(".scrollContainer").scrollTop(0);
-                                }
-                                else
-                                    PUT(image, getImagesList, error);
-                                resetImageForm();
-                                holdCheckETag = false;
-                                $(this).dialog("close");
-                            }
-                        }
-                    },
-                    {
-                        text: "Annuler",
-                        click: function () {
-                            holdCheckETag = false;
-                            $(this).dialog("close");
-                        }
-                    }]
+                    buttons: imageDlgButtons
                 });
 
                 $("#emailCmd").click(confirmEmail);
