@@ -4,17 +4,19 @@
         "Name": "Nicolas Chourot",
         "Email": "Nicolas.Chourot@clg.qc.ca",
         "Password": "password",
-        "AvatarGUID": "8b33d000-0130-11ed-b7c1-9bbd15ec1d8c",
+        "data": "http://localhost:5000/images/8b33d000-0130-11ed-b7c1-9bbd15ec1d8c.png",
+        "Created": 1601500396,
         "VerifyCode": "verified",
-        "Created": 1601500396
+        "AvatarGUID": "8b33d000-0130-11ed-b7c1-9bbd15ec1d8c"
     },
     {
+        "Name": "Pascal Arès",
+        "GUID": "",
+        "Email": "arespascal79@gmail.com",
+        "Password": "Test123",
         "Id": 2,
-        "Name": "Nicolas Chourot",
-        "Email": "nicolaschourot@videotron.ca",
-        "Password": "********",
-        "AvatarGUID": "",
+        "Created": 1671134620,
         "VerifyCode": "verified",
-        "Created": 1666908912
+        "AvatarGUID": "91a78ae0-7cb3-11ed-9634-ff92958ee3d0"
     }
 ]

@@ -41,10 +41,11 @@ module.exports =
         }
 
         sendVerificationEmail(user) {
+            let lien=this.HttpContext.host+`/Accounts/verify/?id=${user.Id}&code=${user.VerifyCode}`
             let html = `
                 Bonjour ${user.Name}, <br /> <br />
                 Voici votre code vérification :
-                <h3>${user.VerifyCode}</h3>
+               <a href='${lien}'> <h3>${user.VerifyCode}</h3></a>
             `;
             const gmail = new Gmail();
             gmail.send(user.Email, 'Vérification de courriel...', html);
@@ -63,13 +64,18 @@ module.exports =
         verify() {
             let id = parseInt(this.HttpContext.path.params.id);
             let code = parseInt(this.HttpContext.path.params.code);
+            let online = this.HttpContext.path.params.online==1;
             let userFound = this.repository.findByField('Id', id);
             if (userFound) {
                 if (userFound.VerifyCode == code) {
                     userFound.VerifyCode = "verified";
                     if (this.repository.update(userFound) == 0) {
-                        this.HttpContext.response.ok();
                         this.sendConfirmedEmail(userFound);
+                        if(online){
+                            let newToken = TokenManager.create(user);
+                            this.HttpContext.response.JSON(newToken);
+                        }
+                        else  this.HttpContext.response.HTML("<script>window.close()</script>");
                     } else {
                         this.HttpContext.response.unprocessable();
                     }
@@ -83,6 +89,8 @@ module.exports =
 
         // POST: account/register body payload[{"Id": 0, "Name": "...", "Email": "...", "Password": "..."}]
         register(user) {
+            delete user["ImageProfil_ImageUploader"]
+            delete user["Comfirm"];
             user.Created = utilities.nowInSeconds();
             user.VerifyCode = utilities.makeVerifyCode(6);
             let newUser = this.repository.add(user);
@@ -105,6 +113,9 @@ module.exports =
                 user.VerifyCode = foundedUser.VerifyCode
                 if (user.Password == '') { // password not changed
                     user.Password = foundedUser.Password;
+                }
+                if (user.AvatarGUID == undefined) { // AvatarGUID not changed
+                    user.AvatarGUID = foundedUser.AvatarGUID;
                 }
                 if (this.repository != null) {
                     let updateResult = this.repository.update(user);
