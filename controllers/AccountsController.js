@@ -72,7 +72,7 @@ module.exports =
                     if (this.repository.update(userFound) == 0) {
                         this.sendConfirmedEmail(userFound);
                         if(online){
-                            let newToken = TokenManager.create(user);
+                            let newToken = TokenManager.create(userFound);
                             this.HttpContext.response.JSON(newToken);
                         }
                         else  this.HttpContext.response.HTML("<script>window.close()</script>");

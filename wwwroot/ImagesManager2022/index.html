@@ -108,24 +108,23 @@
             <div id="profileDlg">
                 <form id="profileForm">
 
-                    <div id="error_name" class="error"></div>
                     <label for="name_profil">Nom d'usager</label>
+                    <div id="error_name" class="error" hidden>Requis</div>
                     <input type="text" id="name_profil" class="form-control" required>
                     <input type="hidden" id="GUID_profil" value="">
                     
-                    <div id="error_email" class="error"></div>
                     <label for="email_profil">Courriel</label>
+                    <div id="error_email" class="error" hidden>Courriel invalid</div>
                     <input type="text" id="email_profil" class="form-control" required>
 
-                    <div id="error_password" class="error"></div>
                     <label for="password_profil">Mot de passe</label>
+                    <div id="error_password" class="error" hidden>Requis</div>
                     <input type="password" id="password_profil" class="form-control">
 
-                    <div id="error_confirm" class="error"></div>
                     <label for="comfirm_profil">Confirmation</label>
+                    <div id="error_confirm" class="error" hidden>Les mots de passe doivent correspondre</div>
                     <input type="password" id="comfirm_profil" class="form-control">
 
-                    <div id="error_imagePofil" class="error"></div>
                     <label for="imageProfil">Image</label>
                     <div id='imageProfil' class='ImageUploader' defaultImage='images/No_Image.png'
                         waitingImage='images/writing.gif'>
@@ -134,11 +133,11 @@
                 </form>
             </div>
             <div id="emailDlg">
+                <div id="error_code" class="error" hidden>Code de validation invalide</div>
                 <span id="emailMessage">Consultez votre boîte de courriel pour connaître votre code de vérification et
                     inscrivez-le ci-dessous ou cliquez sur le code dans votre courriel</span>
                 <br>
 
-                <div id="error_code" class="error"></div>
                 <label for="code_input">Code vérification</label>
                 <input type="text" id="code_input" class="form-control" required>
             </div>
@@ -251,7 +250,9 @@
         function updateDialogHeight() {
             var key = "";
             for (let data of $("[role=dialog]")) {
-                if (!$(data).attr("style").includes("display")) key = $(data).attr("aria-describedby");
+                if (!$(data).attr("style").includes("display")){
+                    key = $(data).attr("aria-describedby")
+                };
             }
             if (!(typeof key === 'undefined' || key === null || key === "")) {
                 var h = $(".mainContainer").height();
@@ -442,6 +443,7 @@
         }
         function confirmEmail() {
             initDialogHeight("emailDlg");
+            sendErrorInput()
             $("#emailDlg").dialog('open');
         }
         /////////////////////////////////////////////////////////
@@ -456,9 +458,9 @@
             $("#name_profil").val(userData["Username"])
             $("#email_profil").val(userData["Email"])
             $("#GUID_profil").val(userData["AvatarGUID"]);
-
+            
             ImageUploader.setImage('imageProfil', "http://localhost:5000/images/" + userData["AvatarGUID"] + ".png");
-
+            sendErrorInput()
         }
         function editProfile() {
             holdCheckETag = true;
@@ -470,6 +472,7 @@
 
             initDialogHeight("profileDlg");
             $("#profileDlg").dialog('open');
+            sendErrorInput()
         }
         function deleteProfile() {
             $("#confirmDlg").dialog('option', 'title', "Retrait de compte...");
@@ -872,6 +875,8 @@
                     getImagesList(false);
                 }
             });
+            sendErrorInput()
+            $("input").keyup(sendErrorInput)
         }
     </script>
 
