@@ -103,7 +103,7 @@
                         <div id="label_uploader" class="note">Cliquez-Déposez une image</div>
 
                         <label id="label_share" for="check_share">Partager l'image?</label>
-                        <input type="checkbox" id="check_share" required>
+                        <input type="checkbox" id="check_share">
                     </form>
                 </div>
                 <div id="profileDlg">
@@ -281,6 +281,8 @@
                 getImagesList(true);
             }
 
+            function tryRefresh() { if (!holdCheckETag) { getImagesList(); /*console.log("refreshed!");*/ } }
+
             function getImagesList(refresh = true) {
                 appendMode = !refresh;
                 sortMethod = "desc"
@@ -365,7 +367,7 @@
                         var showImage = true;
                         var author = false;
                         if (loggedIn) if (image.UserId == userData.UserId) author = true;
-                        if (image.Shared) if (author) image.AvatarGUID = "shared";
+                        if (image.Shared) { if (author) image.AvatarGUID = "shared"; }
                         else if (!author) showImage = false;
                         if (showImage) insertIntoImageList(image, author);
                     }
@@ -544,6 +546,8 @@
                         Title: $("#title_input").val(),
                         Description: $("#description_input").val(),
                         ImageData: ImageUploader.getImageData('image'),
+                        UserId: userData.UserId,
+                        Shared: $("#check_share").is(':checked'),
                         Date: parseInt($("#date_input").val())
                     };
                     return image;
@@ -557,6 +561,7 @@
                 $("#GUID_input").val(image.GUID);
                 $("#date_input").val(image.Date);
                 //$("#date_input").val(Date.now());
+                $("#check_share").attr('checked', image.Shared);
                 $("#title_input").val(image.Title);
                 $("#description_input").val(image.Description);
                 ImageUploader.setImage('image', image.OriginalURL);
@@ -811,6 +816,8 @@
                         getImagesList(false);
                     }
                 });
+
+                setInterval(()=>tryRefresh(), 5000);
             }
         </script>
 
