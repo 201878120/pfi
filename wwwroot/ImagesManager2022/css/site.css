@@ -191,6 +191,9 @@ textarea2 {
     font-size: 12px;
     color: blue;
 }
+.aboutCmd {
+    cursor: pointer;
+}
 .image {
     cursor: pointer;
     height: 220px;

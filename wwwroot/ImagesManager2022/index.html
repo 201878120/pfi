@@ -22,7 +22,7 @@
     <div class="mainContainer">
         <div class="headerPanel">
             <div class="headerLayout">
-                <img src="images/camera.png" alt="" data-toggle="tooltip" class="favicon" title="Gestionnaire d'images">
+                <img src="images/camera.png" alt="" data-toggle="tooltip" class="aboutCmd favicon" title="Gestionnaire d'images">
                 <div style="display:flex">
                     <span class="header outLinedText tbg-yellow">P</span>
                     <span class="header outLinedText tbg-orange">I</span>
@@ -101,13 +101,19 @@
                     </div>
                     <div id="label_uploader" class="note">Cliquez-Déposez une image</div>
 
-                    <label id="label_share" for="check_share">Partager l'image?</label>
-                    <input type="checkbox" id="check_share" required>
-                </form>
-            </div>
-            <div id="profileDlg">
-                <form id="profileForm">
+                        <label id="label_share" for="check_share">Partager l'image?</label>
+                        <input type="checkbox" id="check_share">
+                    </form>
+                </div>
+                <div id="profileDlg">
+                    <form id="profileForm">
+                        
+                        <div id="error_name" class="error"></div>
+                        <label for="name_profil">Nom d'usager</label>
+                        <input type="text" id="name_profil" class="form-control" required>
+                        <input type="hidden" id="GUID_profil" value="">
 
+<<<<<<< HEAD
                     <label for="name_profil">Nom d'usager</label>
                     <div id="error_name" class="error" hidden>Requis</div>
                     <input type="text" id="name_profil" class="form-control" required>
@@ -116,6 +122,11 @@
                     <label for="email_profil">Courriel</label>
                     <div id="error_email" class="error" hidden>Courriel invalid</div>
                     <input type="text" id="email_profil" class="form-control" required>
+=======
+                        <div id="error_email" class="error"></div>
+                        <label for="email_profil">Courriel</label>
+                        <input type="text" id="email_profil" class="form-control" required>
+>>>>>>> c54897eaae1c45ccc9173ac73a9590c79fc0bb88
 
                     <label for="password_profil">Mot de passe</label>
                     <div id="error_password" class="error" hidden>Requis</div>
@@ -133,10 +144,6 @@
                 </form>
             </div>
             <div id="emailDlg">
-                <div id="error_code" class="error" hidden>Code de validation invalide</div>
-                <span id="emailMessage">Consultez votre boîte de courriel pour connaître votre code de vérification et
-                    inscrivez-le ci-dessous ou cliquez sur le code dans votre courriel</span>
-                <br>
 
                 <label for="code_input">Code vérification</label>
                 <input type="text" id="code_input" class="form-control" required>
@@ -154,6 +161,13 @@
                     <label for="remember_login">Se souvenir de moi</label>
                     <input type="checkbox" id="remember_login" required>
                 </form>
+            </div>
+            <div id="aboutDlg">
+                <span id="aboutMessage">
+                    <p>Travail fait par</p>
+                    <p>- Pascal Ares</p>
+                    <p>- Samuel Proulx</p>
+                </span>
             </div>
             <div id="confirmDlg">
                 <span id="confirmationMessage"></span>
@@ -238,6 +252,7 @@
             errorDlg: 230,
             emailDlg: 320,
             imageDlg: 790,
+            aboutDlg: 200,
             loginDlg: 400
         }
         function initDialogHeight(d, offset = 0) {
@@ -269,25 +284,27 @@
                 $("#profileName").text(userData.Username);
                 $("#profileImage").attr("src", "../images/" + userData.AvatarGUID + ".png");
 
-                $("#newImageCmd").show(0);
-                $("#profileCmd").show(0);
-                $("#logoutCmd").show(0);
-                $("#profileName").show(0);
-                $("#profileImage").show(0);
-                $("#loginCmd").hide(0);
-                $("#signUpCmd").hide(0);
-            } else {
-                userData = null;
-                $("#newImageCmd").hide(0);
-                $("#profileCmd").hide(0);
-                $("#logoutCmd").hide(0);
-                $("#profileName").hide(0);
-                $("#profileImage").hide(0);
-                $("#loginCmd").show(0);
-                $("#signUpCmd").show(0);
+                    $("#newImageCmd").show(0);
+                    $("#profileCmd").show(0);
+                    $("#logoutCmd").show(0);
+                    $("#profileName").show(0);
+                    $("#profileImage").show(0);
+                    $("#loginCmd").hide(0);
+                    $("#signUpCmd").hide(0);
+                } else {
+                    userData = null;
+                    $("#newImageCmd").hide(0);
+                    $("#profileCmd").hide(0);
+                    $("#logoutCmd").hide(0);
+                    $("#profileName").hide(0);
+                    $("#profileImage").hide(0);
+                    $("#loginCmd").show(0);
+                    $("#signUpCmd").show(0);
+                }
+                getImagesList(true);
             }
-            getImagesList(true);
-        }
+
+        function tryRefresh() { if (!holdCheckETag) { getImagesList(); /*console.log("refreshed!");*/ } }
 
         function getImagesList(refresh = true) {
             appendMode = !refresh;
@@ -368,16 +385,16 @@
 
             if (appendMode && images.length == 0) imagesCount -= appendCount;
 
-            for (let image of images) {
-                if (($("#searchKeyword").val() == "") || (!((image.Title.indexOf($("#searchKeyword").val()) == -1) && (image.Description.indexOf($("#searchKeyword").val())) == -1))) {
-                    var showImage = true;
-                    var author = false;
-                    if (loggedIn) if (image.UserId == userData.UserId) author = true;
-                    if (image.Shared) if (author) image.AvatarGUID = "shared";
-                    else if (!author) showImage = false;
-                    if (showImage) insertIntoImageList(image, author);
+                for (let image of images) {
+                    if (($("#searchKeyword").val() == "") || (!((image.Title.indexOf($("#searchKeyword").val()) == -1) && (image.Description.indexOf($("#searchKeyword").val())) == -1))) {
+                        var showImage = true;
+                        var author = false;
+                        if (loggedIn) if (image.UserId == userData.UserId) author = true;
+                        if (image.Shared) { if (author) image.AvatarGUID = "shared"; }
+                        else if (!author) showImage = false;
+                        if (showImage) insertIntoImageList(image, author);
+                    }
                 }
-            }
 
             $(".scrollContainer").scrollTop(previousScrollPosition);
             $(".editCmd").off();
@@ -421,6 +438,10 @@
         }
 
 
+        function about() {
+            initDialogHeight("aboutDlg");
+            $("#aboutDlg").dialog('open');
+        }
         function login() {
             initDialogHeight("loginDlg");
             $("#email_login").val(localStorage.getItem("email"))
@@ -530,59 +551,62 @@
             $("#title_input").prop("readonly", false);
             $("#image_ImageUploader").removeAttr('disabled');
 
-            $("#imageDlgOkBtn").text("Modifier");
-            initDialogHeight("imageDlg");
-            $("#imageDlg").dialog('open');
-        }
-        function deleteImage(e) {
-            holdCheckETag = true;
-            imageIdToDelete = e.target.getAttribute("imageid")
-            GET_ID(
-                imageIdToDelete,
-                image => {
-                    $("#confirmationMessage").html("Voulez-vous vraiment effacer l'image <br><b>" + image.Title + "</b>?")
-                },
-                error
-            );
-            holdCheckETag = true;
-            $("#confirmDlg").dialog('option', 'title', "Retrait d'image...");
-            $("#confirmDlgOkBtn").text("Effacer");
-            initDialogHeight("confirmDlg");
-            $("#confirmDlg").dialog('open');
-        }
-        function resetImageForm() {
-            $("#Id_input").val("0");
-            $("#GUID_input").val("");
-            $("#date_input").val(Date.now());
-            $("#title_input").val("");
-            $("#description_input").val("");
-            ImageUploader.resetImage('image');
-        }
-        function imageFromForm() {
-            if ($("#imageForm")[0].checkValidity()) {
-                let image = {
-                    Id: parseInt($("#Id_input").val()),
-                    GUID: $("#GUID_input").val(),
-                    Title: $("#title_input").val(),
-                    Description: $("#description_input").val(),
-                    ImageData: ImageUploader.getImageData('image'),
-                    Date: parseInt($("#date_input").val())
-                };
-                return image;
-            } else {
-                $("#imageForm")[0].reportValidity()
+                $("#imageDlgOkBtn").text("Modifier");
+                initDialogHeight("imageDlg");  
+                $("#imageDlg").dialog('open');
             }
-            return false;
-        }
-        function imageToForm(image) {
-            $("#Id_input").val(image.Id);
-            $("#GUID_input").val(image.GUID);
-            $("#date_input").val(image.Date);
-            //$("#date_input").val(Date.now());
-            $("#title_input").val(image.Title);
-            $("#description_input").val(image.Description);
-            ImageUploader.setImage('image', image.OriginalURL);
-        }
+            function deleteImage(e) {
+                holdCheckETag = true;
+                imageIdToDelete = e.target.getAttribute("imageid")
+                GET_ID(
+                    imageIdToDelete,
+                    image => {
+                        $("#confirmationMessage").html("Voulez-vous vraiment effacer l'image <br><b>" + image.Title + "</b>?")
+                    },
+                    error
+                );
+                holdCheckETag = true;
+                $("#confirmDlg").dialog('option', 'title', "Retrait d'image...");
+                $("#confirmDlgOkBtn").text("Effacer");
+                initDialogHeight("confirmDlg");  
+                $("#confirmDlg").dialog('open');
+            }
+            function resetImageForm() {
+                $("#Id_input").val("0");
+                $("#GUID_input").val("");
+                $("#date_input").val(Date.now());
+                $("#title_input").val("");
+                $("#description_input").val("");
+                ImageUploader.resetImage('image');
+            }
+            function imageFromForm() {
+                if ($("#imageForm")[0].checkValidity()) {
+                    let image = {
+                        Id: parseInt($("#Id_input").val()),
+                        GUID: $("#GUID_input").val(),
+                        Title: $("#title_input").val(),
+                        Description: $("#description_input").val(),
+                        ImageData: ImageUploader.getImageData('image'),
+                        UserId: userData.UserId,
+                        Shared: $("#check_share").is(':checked'),
+                        Date: parseInt($("#date_input").val())
+                    };
+                    return image;
+                } else {
+                    $("#imageForm")[0].reportValidity()
+                }
+                return false;
+            }
+            function imageToForm(image) {
+                $("#Id_input").val(image.Id);
+                $("#GUID_input").val(image.GUID);
+                $("#date_input").val(image.Date);
+                //$("#date_input").val(Date.now());
+                $("#check_share").attr('checked', image.Shared);
+                $("#title_input").val(image.Title);
+                $("#description_input").val(image.Description);
+                ImageUploader.setImage('image', image.OriginalURL);
+            }
 
 
         function init_UI() {
@@ -673,6 +697,24 @@
                             $(this).dialog("close");
                         }
                     }]
+            });
+
+            $(".aboutCmd").click(about);
+            $("#aboutDlg").dialog({
+                title: "À Propos",
+                resizable: false,
+                autoOpen: false,
+                modal: true,
+                show: { effect: 'fade', speed: 400 },
+                hide: { effect: 'fade', speed: 400 },
+                width: 400,
+                minWidth: 400,
+                maxWidth: 400,
+                height: "auto",
+                minHeight: "auto",
+                maxHeight: "auto",
+                position: { my: "top", at: "top", of: window },
+                buttons: []
             });
 
             $("#loginCmd").click(login);
@@ -877,8 +919,16 @@
             });
             sendErrorInput()
             $("input").keyup(sendErrorInput)
-        }
-    </script>
+        
+                $(".scrollContainer").scroll(function () {
+                    if ($(".scrollContainer").scrollTop() + $(".scrollContainer").innerHeight() >= $("#imagesList").height()) {
+                        getImagesList(false);
+                    }
+                });
+
+                setInterval(()=>tryRefresh(), 5000);
+            }
+        </script>
 
 </body>
 
