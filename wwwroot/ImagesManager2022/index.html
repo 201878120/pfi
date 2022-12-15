@@ -22,7 +22,7 @@
     <div class="mainContainer">
         <div class="headerPanel">
             <div class="headerLayout">
-                <img src="images/camera.png" alt="" data-toggle="tooltip" class="favicon" title="Gestionnaire d'images">
+                <img src="images/camera.png" alt="" data-toggle="tooltip" class="aboutCmd favicon" title="Gestionnaire d'images">
                 <div style="display:flex">
                     <span class="header outLinedText tbg-yellow">P</span>
                     <span class="header outLinedText tbg-orange">I</span>
@@ -134,9 +134,6 @@
                 </form>
             </div>
             <div id="emailDlg">
-                <span id="emailMessage">Consultez votre boîte de courriel pour connaître votre code de vérification et
-                    inscrivez-le ci-dessous ou cliquez sur le code dans votre courriel</span>
-                <br>
 
                 <div id="error_code" class="error"></div>
                 <label for="code_input">Code vérification</label>
@@ -155,6 +152,13 @@
                     <label for="remember_login">Se souvenir de moi</label>
                     <input type="checkbox" id="remember_login" required>
                 </form>
+            </div>
+            <div id="aboutDlg">
+                <span id="aboutMessage">
+                    <p>Travail fait par</p>
+                    <p>- Pascal Ares</p>
+                    <p>- Samuel Proulx</p>
+                </span>
             </div>
             <div id="confirmDlg">
                 <span id="confirmationMessage"></span>
@@ -239,6 +243,7 @@
             errorDlg: 230,
             emailDlg: 320,
             imageDlg: 790,
+            aboutDlg: 200,
             loginDlg: 400
         }
         function initDialogHeight(d, offset = 0) {
@@ -422,6 +427,10 @@
         }
 
 
+        function about() {
+            initDialogHeight("aboutDlg");
+            $("#aboutDlg").dialog('open');
+        }
         function login() {
             initDialogHeight("loginDlg");
             $("#email_login").val(localStorage.getItem("email"))
@@ -675,6 +684,24 @@
                             $(this).dialog("close");
                         }
                     }]
+            });
+
+            $(".aboutCmd").click(about);
+            $("#aboutDlg").dialog({
+                title: "À Propos",
+                resizable: false,
+                autoOpen: false,
+                modal: true,
+                show: { effect: 'fade', speed: 400 },
+                hide: { effect: 'fade', speed: 400 },
+                width: 400,
+                minWidth: 400,
+                maxWidth: 400,
+                height: "auto",
+                minHeight: "auto",
+                maxHeight: "auto",
+                position: { my: "top", at: "top", of: window },
+                buttons: []
             });
 
             $("#loginCmd").click(login);
