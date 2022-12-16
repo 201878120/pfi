@@ -1,1 +1,20 @@
-[{"Id":1,"Name":"Nicolas Chourot","Email":"Nicolas.Chourot@clg.qc.ca","Password":"password","Created":1601500396,"VerifyCode":"verified","AvatarGUID":"8b33d000-0130-11ed-b7c1-9bbd15ec1d8c"},{"Name":"Nicolas Chouro","GUID":"","Email":"arespascal79@gmail.co","Password":"Test123","Id":4,"Created":1671149638,"VerifyCode":"verified","AvatarGUID":""},{"Id":5,"Name":"pascala79","Email":"pascal.ares@hotmail.fr","Password":"qwerty","AvatarGUID":"a2980ef0-7ce6-11ed-928b-dfd2d7a566b8","Created":1671156553,"VerifyCode":"verified"}]
+[
+    {
+        "Id": 1,
+        "Name": "Nicolas Chourot",
+        "Email": "Nicolas.Chourot@clg.qc.ca",
+        "Password": "password",
+        "Created": 1601500396,
+        "VerifyCode": "verified",
+        "AvatarGUID": "8b33d000-0130-11ed-b7c1-9bbd15ec1d8c"
+    },
+    {
+        "Id": 5,
+        "Name": "pascala79",
+        "Email": "pascal.ares@hotmail.fr",
+        "Password": "qwerty",
+        "AvatarGUID": "a2980ef0-7ce6-11ed-928b-dfd2d7a566b8",
+        "Created": 1671156553,
+        "VerifyCode": "verified"
+    }
+]
