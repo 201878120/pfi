@@ -271,10 +271,8 @@
             loggedIn = log;
             if (loggedIn) {
                 $("#profileName").text(userData.Username);
-                if(userData.AvatarGUID==""){
-                    userData.AvatarGUID="No_Avatar"
-                }
-                $("#profileImage").attr("src", (userData.AvatarGUID!="../"?"":"")+"images/" + userData.AvatarGUID + ".png");
+                confirm(userData.AvatarGUID)
+                $("#profileImage").attr("src", (userData.AvatarGUID!="No_Avatar"?"../":"")+"images/" + userData.AvatarGUID + ".png");
 
                     $("#newImageCmd").show(0);
                     $("#profileCmd").show(0);
