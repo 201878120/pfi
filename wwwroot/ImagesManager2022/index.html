@@ -273,7 +273,15 @@
                 $("#profileName").text(userData.Username);
                 $("#profileImage").attr("src", (userData.AvatarGUID!="No_Avatar"?"../":"")+"images/" + userData.AvatarGUID + ".png");
 
-                    $("#newImageCmd").show(0);
+                let ajaxProfil = new Ajax()
+                ajaxProfil.setDefaultPath("api/accounts");
+                ajaxProfil.setHeaders({
+                            "authorization": "Bearer " + userData.Access_token
+                        });
+                        ajaxProfil.GET((data)=>{
+                            if(data.VerifyCode=="verified")$("#newImageCmd").show(0);
+                        },console.error,userData.UserId)
+                    
                     $("#profileCmd").show(0);
                     $("#logoutCmd").show(0);
                     $("#profileName").show(0);
@@ -323,6 +331,7 @@
                 for (let image of images) {
                     addUserToSearch(image.UserId, image.UserName)
                 }
+                currentETag = ETag;
         }
         function addUserToSearch(id, name) {
             if (!(id in idUserDictionary)) {
@@ -824,6 +833,8 @@
                                             Username:data.Name
                                         }
                                         sendEmail()
+                                        
+                                        getImagesList(true);
                                     }, ()=>ajoutImpossible("Ajout impossible:\nLe courriel est déjà utilisé"), "register")
                                 }
                                 else {
@@ -846,8 +857,15 @@
                                             data.ImageData = dataImage;
                                             data.AvatarGUID=userData.AvatarGUID?userData.AvatarGUID:""
                                         }
-                                        ajaxProfil.PUT(data, ()=>{
+                                        ajaxProfil.PUT(data, (info)=>{
                                             sendEmail();
+                                            ajaxProfil.setDefaultPath("api/accounts")
+                                            ajaxProfil.GET((data)=>{
+                                                userData.AvatarGUID=data.AvatarGUID
+                                                userData.Email=data.Email
+                                                userData.Username=data.Name
+                                            },console.error,userData.UserId)
+                                            getImagesList(true);
                                             $(this).dialog("close");
                                         }, ()=>ajoutImpossible("Modification impossible:\nLe courriel est déjà utilisé"), "modify");
 
