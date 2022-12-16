@@ -78,6 +78,7 @@ function sendErrorInput(){
             $(`#${data.id}`).removeAttr("hidden");
         }
     })
+    $(`#error-conflict`).attr("hidden",1)
 }
 function resetForm(idForm){
     $(`#${idForm} input`).val("")

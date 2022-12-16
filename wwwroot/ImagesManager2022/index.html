@@ -107,7 +107,7 @@
                 </div>
                 <div id="profileDlg">
                     <form id="profileForm">
-                        
+                    <div class="error" id="error-conflict" hidden></div>
                     <label for="name_profil">Nom d'usager</label>
                     <div id="error_name" class="error" hidden>Requis</div>
                     <input type="text" id="name_profil" class="form-control" required>
@@ -126,14 +126,14 @@
                     <input type="password" id="comfirm_profil" class="form-control">
 
                     <label for="imageProfil">Image</label>
-                    <div id='imageProfil' class='ImageUploader' defaultImage='images/No_Image.png'
+                    <div id='imageProfil' class='ImageUploader' defaultImage='images/No_Avatar.png'
                         waitingImage='images/writing.gif'>
                     </div>
                     <div class="note">Cliquez-Déposez une image</div>
                 </form>
             </div>
             <div id="emailDlg">
-
+                <div id="error_code" class="error" hidden>Code invalide</div>
                 <label for="code_input">Code vérification</label>
                 <input type="text" id="code_input" class="form-control" required>
             </div>
@@ -271,7 +271,10 @@
             loggedIn = log;
             if (loggedIn) {
                 $("#profileName").text(userData.Username);
-                $("#profileImage").attr("src", "../images/" + userData.AvatarGUID + ".png");
+                if(userData.AvatarGUID==""){
+                    userData.AvatarGUID="No_Avatar"
+                }
+                $("#profileImage").attr("src", (userData.AvatarGUID!="../"?"":"")+"images/" + userData.AvatarGUID + ".png");
 
                     $("#newImageCmd").show(0);
                     $("#profileCmd").show(0);
@@ -351,7 +354,7 @@
                     $(` 
                                 <div class='imageLayout'>
                                     <div style="position:relative">
-                                        <img class="imageProfileImage" src="../images/${image.AvatarGUID}.png" alt="${image.UserName}" data-toggle="tooltip" title="${image.UserName}">
+                                        <img class="imageProfileImage" src="${image.AvatarGUID=="No_Avatar"?"":"../"}images/${image.AvatarGUID}.png" alt="${image.UserName}" data-toggle="tooltip" title="${image.UserName}">
                                     </div>
                                     <div class='imageHeader'>
                                         <div class="imageTitle">${image.Title}</div>${modControls}
@@ -454,7 +457,6 @@
         }
         function confirmEmail() {
             initDialogHeight("emailDlg");
-            sendErrorInput()
             $("#emailDlg").dialog('open');
         }
         /////////////////////////////////////////////////////////
@@ -464,26 +466,29 @@
             $("#password_profil").val("");
             $("#comfirm_profil").val("");
             ImageUploader.resetImage('imageProfil');
+            sendErrorInput()
         }
         function profileToForm(userData) {
             $("#name_profil").val(userData["Username"])
             $("#email_profil").val(userData["Email"])
             $("#GUID_profil").val(userData["AvatarGUID"]);
             
-            ImageUploader.setImage('imageProfil', location.protocol+"//"+location.host+"/images/" + userData["AvatarGUID"] + ".png");
             sendErrorInput()
+            console.log(userData["AvatarGUID"])
+            ImageUploader.setImage('imageProfil', userData["AvatarGUID"]=='No_Avatar'?"images/" + userData["AvatarGUID"] + ".png": location.protocol+"//"+location.host+"/images/" + userData["AvatarGUID"] + ".png");
         }
         function editProfile() {
             holdCheckETag = true;
             createMode = false;
             profileToForm(userData)
+            
+            sendErrorInput()
             ImageUploader.imageRequired('image', true);
             $("#profileDlg").dialog('option', 'title', "Modification de profil");
             $("#profileDlgOkBtn").text("Modifier");
             creatingProfile=0
             initDialogHeight("profileDlg");
             $("#profileDlg").dialog('open');
-            sendErrorInput()
         }
         function deleteProfile() {
             $("#confirmDlg").dialog('option', 'title', "Retrait de compte...");
@@ -677,7 +682,8 @@
                                 switchConnection(true);
                                 $(this).dialog("close");
                                 $("input").val("")
-                            }, console.error,"verify", "accounts", `id=${userData.UserId}&code=${codeVerification}&online=1`)
+                                $("error_code").attr("hidden",1)
+                            }, ()=>{$("error_code").removeAttr("hidden")},"verify", "accounts", `id=${userData.UserId}&code=${codeVerification}&online=1`)
                         }
                     },
                     {
@@ -793,54 +799,64 @@
                         id: "profileDlgOkBtn",
                         text: "Title will be changed dynamically",
                         click: function () {
-                            let userForm = formatData(getData("profileForm"), "_profil")
-                            let ajaxProfil = new Ajax()
-                            ajaxProfil.setDefaultPath("accounts")
-                            if (creatingProfile) {
-                                userForm["ImageData"] = userForm["ImageProfil_Data"];
-                                delete userForm["ImageProfil_Data"];
-                                userForm["Id"] = 0;
-                                ajaxProfil.POST(userForm, (data) => {
-                                    userData = {
-                                        Access_token: "",
-                                        AvatarGUID:data.AvatarGUID,
-                                        Email: data.Email,
-                                        Expire_Time:  0,
-                                        UserId: data.Id,
-                                        Username:data.Name
-                                    }
-                                    confirmEmail()
-                                }, console.error, "register")
-                            }
-                            else {
-                                if (creatingProfile || userData.Email != $("#email_profil").val()) {
+                            function sendEmail(){
+                                if (userData==null||userData.Email != $("#email_profil").val()) {
                                     confirmEmail();
                                 }
+                            }
+                            function ajoutImpossible(error){
+                                $("#error-conflict").removeAttr("hidden")
+                                $("#error-conflict").html(error)
+                            }
+                            // si aucune erreur détectée 
+                            if($("#profileDlg .error:not(:hidden)").length==0){
+                                let userForm = formatData(getData("profileForm"), "_profil")
+                                let ajaxProfil = new Ajax()
+                                ajaxProfil.setDefaultPath("accounts")
+                                if (userData==null) {
+                                    userForm["ImageData"] = userForm["ImageProfil_Data"];
+                                    delete userForm["ImageProfil_Data"];
+                                    userForm["Id"] = 0;
+                                    ajaxProfil.POST(userForm, (data) => {
+                                        userData = {
+                                            Access_token: "",
+                                            AvatarGUID:data.AvatarGUID,
+                                            Email: data.Email,
+                                            Expire_Time:  0,
+                                            UserId: data.Id,
+                                            Username:data.Name
+                                        }
+                                        sendEmail()
+                                    }, ()=>ajoutImpossible("Ajout impossible:\nLe courriel est déjà utilisé"), "register")
+                                }
+                                else {
 
-                                if ($("#password_profil").val() == $("#comfirm_profil").val()) {
+                                    if ($("#password_profil").val() == $("#comfirm_profil").val()) {
 
-                                    let data =
-                                    {
-                                        "Id": userData.UserId,
-                                        "Name": $("#name_profil").val(),
-                                        "Email": $("#email_profil").val(),
-                                        "Password": $("#password_profil").val()
+                                        let data =
+                                        {
+                                            "Id": userData.UserId,
+                                            "Name": $("#name_profil").val(),
+                                            "Email": $("#email_profil").val(),
+                                            "Password": $("#password_profil").val()
+                                        }
+                                        ajaxProfil.setHeaders({
+                                            "authorization": "Bearer " + userData.Access_token
+                                        })
+                                        let dataImage = $("#imageProfil_ImageContainer").css("background-image").
+                                            replace(["url"], "").replace("(", "").replace(")", "").replaceAll('"', "")
+                                        if (dataImage != location.protocol+'//'+location.host+'/ImagesManager2022/images/No_Image.png') {
+                                            data.ImageData = dataImage;
+                                            data.AvatarGUID=userData.AvatarGUID?userData.AvatarGUID:""
+                                        }
+                                        ajaxProfil.PUT(data, ()=>{
+                                            sendEmail();
+                                            $(this).dialog("close");
+                                        }, ()=>ajoutImpossible("Modification impossible:\nLe courriel est déjà utilisé"), "modify");
+
                                     }
-                                    ajaxProfil.setHeaders({
-                                        "authorization": "Bearer " + userData.Access_token
-                                    })
-                                    let dataImage = $("#imageProfil_ImageContainer").css("background-image").
-                                        replace(["url"], "").replace("(", "").replace(")", "").replaceAll('"', "")
-                                    if (dataImage != location.protocol+'//'+location.host+'/ImagesManager2022/images/No_Image.png') {
-                                        data.ImageData = dataImage;
-                                        data.AvatarGUID=userData.AvatarGUID?userData.AvatarGUID:""
-                                    }
-                                    ajaxProfil.PUT(data, console.log, console.error, "modify");
-
-                                    $(this).dialog("close");
                                 }
                             }
-
                         }
                     },
                     {
