@@ -18,5 +18,15 @@
         "Created": 1671134620,
         "VerifyCode": "verified",
         "AvatarGUID": "91a78ae0-7cb3-11ed-9634-ff92958ee3d0"
+    },
+    {
+        "Name": "MrTemporaire",
+        "GUID": "",
+        "Email": "smurfowowatch@gmail.com",
+        "Password": "temporaire",
+        "Id": 3,
+        "Created": 1671211039,
+        "VerifyCode": "verified",
+        "AvatarGUID": "7f1820d0-7d65-11ed-9e3c-d9882281b5de"
     }
 ]
