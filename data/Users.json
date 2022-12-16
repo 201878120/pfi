@@ -1,1 +1,32 @@
-[{"Id":1,"Name":"Nicolas Chourot","Email":"Nicolas.Chourot@clg.qc.ca","Password":"password","AvatarGUID":"8b33d000-0130-11ed-b7c1-9bbd15ec1d8c","Created":1601500396,"VerifyCode":"verified"},{"Id":5,"Name":"pascala79","Email":"pascal.ares@hotmail.fr","Password":"qwerty","AvatarGUID":"a2980ef0-7ce6-11ed-928b-dfd2d7a566b8","Created":1671156553,"VerifyCode":"verified"}]
+[
+    {
+        "Id": 1,
+        "Name": "Nicolas Chourot",
+        "Email": "Nicolas.Chourot@clg.qc.ca",
+        "Password": "password",
+        "data": "http://localhost:5000/images/8b33d000-0130-11ed-b7c1-9bbd15ec1d8c.png",
+        "Created": 1601500396,
+        "VerifyCode": "verified",
+        "AvatarGUID": "8b33d000-0130-11ed-b7c1-9bbd15ec1d8c"
+    },
+    {
+        "Name": "Pascal Arès",
+        "GUID": "",
+        "Email": "arespascal79@gmail.com",
+        "Password": "Test123",
+        "Id": 2,
+        "Created": 1671134620,
+        "VerifyCode": "verified",
+        "AvatarGUID": "91a78ae0-7cb3-11ed-9634-ff92958ee3d0"
+    },
+    {
+        "Name": "MrTemporaire",
+        "GUID": "",
+        "Email": "smurfowowatch@gmail.com",
+        "Password": "temporaire",
+        "Id": 3,
+        "Created": 1671211039,
+        "VerifyCode": "verified",
+        "AvatarGUID": "7f1820d0-7d65-11ed-9e3c-d9882281b5de"
+    }
+]
