@@ -1,5 +1,5 @@
-const apiBaseURL = "https"+`://${location.host}/api/images`;
-const userURL = "https"+`://${location.host}/api/accounts`;
+const apiBaseURL = location.protocol+`//${location.host}/api/images`;
+const userURL = location.protocol+`//${location.host}/api/accounts`;
 
 function HEAD(successCallBack, errorCallBack) {
     $.ajax({

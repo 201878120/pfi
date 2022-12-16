@@ -16,7 +16,7 @@ class Ajax{
     }
     GET(successCallBack, errorCallBack,action="",path="", queryString = "") {
         if(path=="") path=this.#defaultPath;
-        let url = "https"+"://"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
+        let url = location.protocol+"//"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
         $.ajax({
             url: url,
             type: 'GET',
@@ -27,7 +27,7 @@ class Ajax{
     }
     POST(data, successCallBack, errorCallBack,action="",path="", queryString = "") {
         if(path=="") path=this.#defaultPath;
-        let url = "https"+"://"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
+        let url = location.protocol+"//"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
         $.ajax({
             url: url,
             type: 'POST',
@@ -40,7 +40,7 @@ class Ajax{
     }
     PUT(data, successCallBack, errorCallBack,action="",path="", queryString = "") {
         if(path=="") path=this.#defaultPath;
-        let url = "https"+"://"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
+        let url = location.protocol+"//"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
         //console.log(url)
         $.ajax({
             url: url,
@@ -54,7 +54,7 @@ class Ajax{
     }
     DELETE(successCallBack, errorCallBack,path="", queryString = "") {
         if(path=="") path=this.#defaultPath;
-        let url = "https"+"://"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
+        let url = location.protocol+"//"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
         $.ajax({
             url: url,
             type: 'DELETE',

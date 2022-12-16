@@ -470,7 +470,7 @@
             $("#email_profil").val(userData["Email"])
             $("#GUID_profil").val(userData["AvatarGUID"]);
             
-            ImageUploader.setImage('imageProfil', "https"+"://"+location.host+"/images/" + userData["AvatarGUID"] + ".png");
+            ImageUploader.setImage('imageProfil', location.protocol+"//"+location.host+"/images/" + userData["AvatarGUID"] + ".png");
             sendErrorInput()
         }
         function editProfile() {
@@ -831,7 +831,7 @@
                                     })
                                     let dataImage = $("#imageProfil_ImageContainer").css("background-image").
                                         replace(["url"], "").replace("(", "").replace(")", "").replaceAll('"', "")
-                                    if (dataImage != "https"+'://'+location.host+'/ImagesManager2022/images/No_Image.png') {
+                                    if (dataImage != location.protocol+'//'+location.host+'/ImagesManager2022/images/No_Image.png') {
                                         data.ImageData = dataImage;
                                         data.AvatarGUID=userData.AvatarGUID?userData.AvatarGUID:""
                                     }
