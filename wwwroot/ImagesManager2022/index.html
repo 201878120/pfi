@@ -271,7 +271,6 @@
             loggedIn = log;
             if (loggedIn) {
                 $("#profileName").text(userData.Username);
-                confirm(userData.AvatarGUID)
                 $("#profileImage").attr("src", (userData.AvatarGUID!="No_Avatar"?"../":"")+"images/" + userData.AvatarGUID + ".png");
 
                     $("#newImageCmd").show(0);
@@ -318,12 +317,12 @@
             GET_ALL(refreshImagesList, error, prepareQueryString());
         }
         function refreshUsersList(images, ETag) {
-            $("#searchUser").empty();
-            idUserDictionary = {};
-            $("#searchUser").append($(`<option value="0">Tout les utilisateurs</option>`));
-            for (let image of images) {
-                addUserToSearch(image.UserId, image.UserName)
-            }
+                $("#searchUser").empty();
+                idUserDictionary = {};
+                $("#searchUser").append($(`<option value="0">Tout les utilisateurs</option>`));
+                for (let image of images) {
+                    addUserToSearch(image.UserId, image.UserName)
+                }
         }
         function addUserToSearch(id, name) {
             if (!(id in idUserDictionary)) {
@@ -334,99 +333,99 @@
             }
         }
         function refreshImagesList(images, ETag) {
-            function insertIntoImageList(image, author) {
-                var modControls = ``;
-                if (author) modControls =
-                    `<div class="cmd editCmd  fa fa-pencil-square" 
-                        imageid="${image.Id}" 
-                        title="Modifier ${image.Title}" 
-                        data-toggle="tooltip">
-                    </div> 
-                    <div class="spacing">⠀</div>
-                    <div class="cmd deleteCmd fa fa-window-close" 
-                        imageid="${image.Id}" 
-                        title="Effacer ${image.Title}" 
-                        data-toggle="tooltip">
-                    </div>`;
-                $("#imagesList").append(
-                    $(` 
-                                <div class='imageLayout'>
-                                    <div style="position:relative">
-                                        <img class="imageProfileImage" src="${image.AvatarGUID=="No_Avatar"?"":"../"}images/${image.AvatarGUID}.png" alt="${image.UserName}" data-toggle="tooltip" title="${image.UserName}">
+            
+                function insertIntoImageList(image, author) {
+                    var modControls = ``;
+                    if (author) modControls =
+                        `<div class="cmd editCmd  fa fa-pencil-square" 
+                            imageid="${image.Id}" 
+                            title="Modifier ${image.Title}" 
+                            data-toggle="tooltip">
+                        </div> 
+                        <div class="spacing">⠀</div>
+                        <div class="cmd deleteCmd fa fa-window-close" 
+                            imageid="${image.Id}" 
+                            title="Effacer ${image.Title}" 
+                            data-toggle="tooltip">
+                        </div>`;
+                    $("#imagesList").append(
+                        $(` 
+                                    <div class='imageLayout'>
+                                        <div style="position:relative">
+                                            <img class="imageProfileImage" src="${image.AvatarGUID=="No_Avatar"?"":"../"}images/${image.AvatarGUID}.png" alt="${image.UserName}" data-toggle="tooltip" title="${image.UserName}">
+                                        </div>
+                                        <div class='imageHeader'>
+                                            <div class="imageTitle">${image.Title}</div>${modControls}
+                                        </div>
+                                        <div class='showImageCmd image'
+                                            imageid="${image.Id}" 
+                                            title="${image.Title}" 
+                                            data-toggle="tooltip" 
+                                            style="background-image:url('${image.ThumbnailURL}')">
+                                        </div>
+                                        <div class="imageDate">${convertToFrenchDate(parseInt(image.Date))}</div>
                                     </div>
-                                    <div class='imageHeader'>
-                                        <div class="imageTitle">${image.Title}</div>${modControls}
-                                    </div>
-                                    <div class='showImageCmd image'
-                                        imageid="${image.Id}" 
-                                        title="${image.Title}" 
-                                        data-toggle="tooltip" 
-                                        style="background-image:url('${image.ThumbnailURL}')">
-                                    </div>
-                                    <div class="imageDate">${convertToFrenchDate(parseInt(image.Date))}</div>
-                                </div>
-                        `)
-                );
-            }
-
-            currentETag = ETag;
-            previousScrollPosition = $(".scrollContainer").scrollTop();
-            if (!appendMode) $("#imagesList").empty();
-
-            if (appendMode && images.length == 0) imagesCount -= appendCount;
-
-                for (let image of images) {
-                    if (($("#searchKeyword").val() == "") || (!((image.Title.indexOf($("#searchKeyword").val()) == -1) && (image.Description.indexOf($("#searchKeyword").val())) == -1))) {
-                        var showImage = true;
-                        var author = false;
-                        if (loggedIn) if (image.UserId == userData.UserId) author = true;
-                        if (image.Shared) { if (author) image.AvatarGUID = "shared"; }
-                        else if (!author) showImage = false;
-                        if (showImage) insertIntoImageList(image, author);
-                    }
+                            `)
+                    );
                 }
 
-            $(".scrollContainer").scrollTop(previousScrollPosition);
-            $(".editCmd").off();
-            $(".deleteCmd").off();
-            $(".showMore").off();
-            $(".showImageCmd").click(e => { getImageDetails(e) });
-            $(".editCmd").click(e => { editImage(e) });
-            $(".deleteCmd").click(e => { deleteImage(e) });
+                currentETag = ETag;
+                previousScrollPosition = $(".scrollContainer").scrollTop();
+                if (!appendMode) $("#imagesList").empty();
 
-            $('[data-toggle="tooltip"]').tooltip();
-        }
+                if (appendMode && images.length == 0) imagesCount -= appendCount;
 
-        function error(status) {
-            let errorMessage = "";
-            switch (status) {
-                case 0:
-                    errorMessage = "Le service ne répond pas";
-                    break;
-                case 401:
-                    errorMessage = "Requête non autorisée";
-                    break;
-                case 400:
-                case 422:
-                    errorMessage = "Requête invalide";
-                    break;
-                case 404:
-                    errorMessage = "Service ou données introuvables";
-                    break;
-                case 409:
-                    errorMessage = "Conflits de données: Hyperlien existe déjà";
-                    break;
-                case 500:
-                    errorMessage = "Erreur interne du service";
-                    break;
-                default:
-                    errorMessage = "Une erreur est survenue";
-                    break;
+                    for (let image of images) {
+                        if (($("#searchKeyword").val() == "") || (!((image.Title.indexOf($("#searchKeyword").val()) == -1) && (image.Description.indexOf($("#searchKeyword").val())) == -1))) {
+                            var showImage = true;
+                            var author = false;
+                            if (loggedIn) if (image.UserId == userData.UserId) author = true;
+                            if (image.Shared) { if (author) image.AvatarGUID = "shared"; }
+                            else if (!author) showImage = false;
+                            if (showImage) insertIntoImageList(image, author);
+                        }
+                    }
+
+                $(".scrollContainer").scrollTop(previousScrollPosition);
+                $(".editCmd").off();
+                $(".deleteCmd").off();
+                $(".showMore").off();
+                $(".showImageCmd").click(e => { getImageDetails(e) });
+                $(".editCmd").click(e => { editImage(e) });
+                $(".deleteCmd").click(e => { deleteImage(e) });
+
+                $('[data-toggle="tooltip"]').tooltip();
             }
-            $("#errorMessage").text(errorMessage);
-            $("#errorDlg").dialog('open');
-        }
 
+            function error(status) {
+                let errorMessage = "";
+                switch (status) {
+                    case 0:
+                        errorMessage = "Le service ne répond pas";
+                        break;
+                    case 401:
+                        errorMessage = "Requête non autorisée";
+                        break;
+                    case 400:
+                    case 422:
+                        errorMessage = "Requête invalide";
+                        break;
+                    case 404:
+                        errorMessage = "Service ou données introuvables";
+                        break;
+                    case 409:
+                        errorMessage = "Conflits de données: Hyperlien existe déjà";
+                        break;
+                    case 500:
+                        errorMessage = "Erreur interne du service";
+                        break;
+                    default:
+                        errorMessage = "Une erreur est survenue";
+                        break;
+                }
+                $("#errorMessage").text(errorMessage);
+                $("#errorDlg").dialog('open');
+            }
 
         function about() {
             initDialogHeight("aboutDlg");
@@ -934,14 +933,14 @@
             });
             sendErrorInput()
             $("input").keyup(sendErrorInput)
-        
+            
                 $(".scrollContainer").scroll(function () {
                     if ($(".scrollContainer").scrollTop() + $(".scrollContainer").innerHeight() >= $("#imagesList").height()) {
                         getImagesList(false);
                     }
                 });
 
-                setInterval(()=>tryRefresh(), 5000);
+                //setInterval(()=>tryRefresh(), 5000);
             }
         </script>
 

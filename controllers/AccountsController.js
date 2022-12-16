@@ -123,7 +123,6 @@ module.exports =
                             user.VerifyCode = utilities.makeVerifyCode(6);
                             this.sendVerificationEmail(user);
                         }
-                        //this.repository.update(user);
                     }
                     else
                         if (updateResult == this.repository.updateResult.conflict)
@@ -140,7 +139,6 @@ module.exports =
         }
         // GET:account/remove/id
         remove(id) { // warning! this is not an API endpoint
-            debugger
             let repImage= new ImagesRepository()
             let removedImg=[]
             repImage.getAll().forEach(img => {
