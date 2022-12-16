@@ -46,6 +46,40 @@ function formatData(json, removedString, capitalFrist=true){
     })
     return jsonReturn;
 }
+function sendErrorInput(){
+    
+    let input=[
+        {
+            id:"error_name",
+            value:$("#name_profil").val(),
+            valider:function(){return this.value!=""}
+        },
+        {
+            id:"error_email",
+            value:$("#email_profil").val(),
+            valider:function(){return (new RegExp("([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)").test(this.value))}
+        },
+        {
+            id:"error_password",
+            value:$("#password_profil").val(),
+            valider:function(){return this.value!="" || this.value=="" && !createMode}
+        },
+        {
+            id:"error_confirm",
+            value:$("#comfirm_profil").val(),
+            valider:function(){return this.value==$("#password_profil").val()}
+        }
+    ];
+    input.forEach(data=>{
+        if(!!data.valider()){
+            $(`#${data.id}`).attr("hidden",1);
+        }
+        else{
+            $(`#${data.id}`).removeAttr("hidden");
+        }
+    })
+    $(`#error-conflict`).attr("hidden",1)
+}
 function resetForm(idForm){
     $(`#${idForm} input`).val("")
     

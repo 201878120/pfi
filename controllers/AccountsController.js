@@ -72,7 +72,7 @@ module.exports =
                     if (this.repository.update(userFound) == 0) {
                         this.sendConfirmedEmail(userFound);
                         if(online){
-                            let newToken = TokenManager.create(user);
+                            let newToken = TokenManager.create(userFound);
                             this.HttpContext.response.JSON(newToken);
                         }
                         else  this.HttpContext.response.HTML("<script>window.close()</script>");
@@ -114,16 +114,13 @@ module.exports =
                 if (user.Password == '') { // password not changed
                     user.Password = foundedUser.Password;
                 }
-                if (user.AvatarGUID == undefined) { // AvatarGUID not changed
-                    user.AvatarGUID = foundedUser.AvatarGUID;
-                }
+                if(user.ImageData.length<1000)user.ImageData=""
                 if (this.repository != null) {
                     let updateResult = this.repository.update(user);
                     if (updateResult == this.repository.updateResult.ok) {
                         this.HttpContext.response.ok();
                         if (user.Email != foundedUser.Email) {
                             user.VerifyCode = utilities.makeVerifyCode(6);
-                            this.repository.update(user);
                             this.sendVerificationEmail(user);
                         }
                     }
@@ -142,6 +139,15 @@ module.exports =
         }
         // GET:account/remove/id
         remove(id) { // warning! this is not an API endpoint
+            let repImage= new ImagesRepository()
+            let removedImg=[]
+            repImage.getAll().forEach(img => {
+                if(img.UserId==id)removedImg.push(img)
+            });
+            console.log(removedImg)
+            removedImg.forEach(i=>{
+                repImage.remove(i.Id)
+            })
             super.remove(id);
         }
     }

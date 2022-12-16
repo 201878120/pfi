@@ -107,35 +107,33 @@
                 </div>
                 <div id="profileDlg">
                     <form id="profileForm">
-                        
-                        <div id="error_name" class="error"></div>
-                        <label for="name_profil">Nom d'usager</label>
-                        <input type="text" id="name_profil" class="form-control" required>
-                        <input type="hidden" id="GUID_profil" value="">
-
-                        <div id="error_email" class="error"></div>
-                        <label for="email_profil">Courriel</label>
+                    <div class="error" id="error-conflict" hidden></div>
+                    <label for="name_profil">Nom d'usager</label>
+                    <div id="error_name" class="error" hidden>Requis</div>
+                    <input type="text" id="name_profil" class="form-control" required>
+                    <input type="hidden" id="GUID_profil" value="">
+                    
+                    <label for="email_profil">Courriel</label>
+                    <div id="error_email" class="error" hidden>Courriel invalid</div>
                         <input type="text" id="email_profil" class="form-control" required>
 
-                    <div id="error_password" class="error"></div>
                     <label for="password_profil">Mot de passe</label>
+                    <div id="error_password" class="error" hidden>Requis</div>
                     <input type="password" id="password_profil" class="form-control">
 
-                    <div id="error_confirm" class="error"></div>
                     <label for="comfirm_profil">Confirmation</label>
+                    <div id="error_confirm" class="error" hidden>Les mots de passe doivent correspondre</div>
                     <input type="password" id="comfirm_profil" class="form-control">
 
-                    <div id="error_imagePofil" class="error"></div>
                     <label for="imageProfil">Image</label>
-                    <div id='imageProfil' class='ImageUploader' defaultImage='images/No_Image.png'
+                    <div id='imageProfil' class='ImageUploader' defaultImage='images/No_Avatar.png'
                         waitingImage='images/writing.gif'>
                     </div>
                     <div class="note">Cliquez-Déposez une image</div>
                 </form>
             </div>
             <div id="emailDlg">
-
-                <div id="error_code" class="error"></div>
+                <div id="error_code" class="error" hidden>Code invalide</div>
                 <label for="code_input">Code vérification</label>
                 <input type="text" id="code_input" class="form-control" required>
             </div>
@@ -256,7 +254,9 @@
         function updateDialogHeight() {
             var key = "";
             for (let data of $("[role=dialog]")) {
-                if (!$(data).attr("style").includes("display")) key = $(data).attr("aria-describedby");
+                if (!$(data).attr("style").includes("display")){
+                    key = $(data).attr("aria-describedby")
+                };
             }
             if (!(typeof key === 'undefined' || key === null || key === "")) {
                 var h = $(".mainContainer").height();
@@ -271,9 +271,17 @@
             loggedIn = log;
             if (loggedIn) {
                 $("#profileName").text(userData.Username);
-                $("#profileImage").attr("src", "../images/" + userData.AvatarGUID + ".png");
+                $("#profileImage").attr("src", (userData.AvatarGUID!="No_Avatar"?"../":"")+"images/" + userData.AvatarGUID + ".png");
 
-                    $("#newImageCmd").show(0);
+                let ajaxProfil = new Ajax()
+                ajaxProfil.setDefaultPath("api/accounts");
+                ajaxProfil.setHeaders({
+                            "authorization": "Bearer " + userData.Access_token
+                        });
+                        ajaxProfil.GET((data)=>{
+                            if(data.VerifyCode=="verified")$("#newImageCmd").show(0);
+                        },console.error,userData.UserId)
+                    
                     $("#profileCmd").show(0);
                     $("#logoutCmd").show(0);
                     $("#profileName").show(0);
@@ -317,12 +325,13 @@
             GET_ALL(refreshImagesList, error, prepareQueryString());
         }
         function refreshUsersList(images, ETag) {
-            $("#searchUser").empty();
-            idUserDictionary = {};
-            $("#searchUser").append($(`<option value="0">Tout les utilisateurs</option>`));
-            for (let image of images) {
-                addUserToSearch(image.UserId, image.UserName)
-            }
+                $("#searchUser").empty();
+                idUserDictionary = {};
+                $("#searchUser").append($(`<option value="0">Tout les utilisateurs</option>`));
+                for (let image of images) {
+                    addUserToSearch(image.UserId, image.UserName)
+                }
+                currentETag = ETag;
         }
         function addUserToSearch(id, name) {
             if (!(id in idUserDictionary)) {
@@ -333,99 +342,99 @@
             }
         }
         function refreshImagesList(images, ETag) {
-            function insertIntoImageList(image, author) {
-                var modControls = ``;
-                if (author) modControls =
-                    `<div class="cmd editCmd  fa fa-pencil-square" 
-                        imageid="${image.Id}" 
-                        title="Modifier ${image.Title}" 
-                        data-toggle="tooltip">
-                    </div> 
-                    <div class="spacing">⠀</div>
-                    <div class="cmd deleteCmd fa fa-window-close" 
-                        imageid="${image.Id}" 
-                        title="Effacer ${image.Title}" 
-                        data-toggle="tooltip">
-                    </div>`;
-                $("#imagesList").append(
-                    $(` 
-                                <div class='imageLayout'>
-                                    <div style="position:relative">
-                                        <img class="imageProfileImage" src="../images/${image.AvatarGUID}.png" alt="${image.UserName}" data-toggle="tooltip" title="${image.UserName}">
+            
+                function insertIntoImageList(image, author) {
+                    var modControls = ``;
+                    if (author) modControls =
+                        `<div class="cmd editCmd  fa fa-pencil-square" 
+                            imageid="${image.Id}" 
+                            title="Modifier ${image.Title}" 
+                            data-toggle="tooltip">
+                        </div> 
+                        <div class="spacing">⠀</div>
+                        <div class="cmd deleteCmd fa fa-window-close" 
+                            imageid="${image.Id}" 
+                            title="Effacer ${image.Title}" 
+                            data-toggle="tooltip">
+                        </div>`;
+                    $("#imagesList").append(
+                        $(` 
+                                    <div class='imageLayout'>
+                                        <div style="position:relative">
+                                            <img class="imageProfileImage" src="${image.AvatarGUID=="No_Avatar"?"":"../"}images/${image.AvatarGUID}.png" alt="${image.UserName}" data-toggle="tooltip" title="${image.UserName}">
+                                        </div>
+                                        <div class='imageHeader'>
+                                            <div class="imageTitle">${image.Title}</div>${modControls}
+                                        </div>
+                                        <div class='showImageCmd image'
+                                            imageid="${image.Id}" 
+                                            title="${image.Title}" 
+                                            data-toggle="tooltip" 
+                                            style="background-image:url('${image.ThumbnailURL}')">
+                                        </div>
+                                        <div class="imageDate">${convertToFrenchDate(parseInt(image.Date))}</div>
                                     </div>
-                                    <div class='imageHeader'>
-                                        <div class="imageTitle">${image.Title}</div>${modControls}
-                                    </div>
-                                    <div class='showImageCmd image'
-                                        imageid="${image.Id}" 
-                                        title="${image.Title}" 
-                                        data-toggle="tooltip" 
-                                        style="background-image:url('${image.ThumbnailURL}')">
-                                    </div>
-                                    <div class="imageDate">${convertToFrenchDate(parseInt(image.Date))}</div>
-                                </div>
-                        `)
-                );
-            }
-
-            currentETag = ETag;
-            previousScrollPosition = $(".scrollContainer").scrollTop();
-            if (!appendMode) $("#imagesList").empty();
-
-            if (appendMode && images.length == 0) imagesCount -= appendCount;
-
-                for (let image of images) {
-                    if (($("#searchKeyword").val() == "") || (!((image.Title.indexOf($("#searchKeyword").val()) == -1) && (image.Description.indexOf($("#searchKeyword").val())) == -1))) {
-                        var showImage = true;
-                        var author = false;
-                        if (loggedIn) if (image.UserId == userData.UserId) author = true;
-                        if (image.Shared) { if (author) image.AvatarGUID = "shared"; }
-                        else if (!author) showImage = false;
-                        if (showImage) insertIntoImageList(image, author);
-                    }
+                            `)
+                    );
                 }
 
-            $(".scrollContainer").scrollTop(previousScrollPosition);
-            $(".editCmd").off();
-            $(".deleteCmd").off();
-            $(".showMore").off();
-            $(".showImageCmd").click(e => { getImageDetails(e) });
-            $(".editCmd").click(e => { editImage(e) });
-            $(".deleteCmd").click(e => { deleteImage(e) });
+                currentETag = ETag;
+                previousScrollPosition = $(".scrollContainer").scrollTop();
+                if (!appendMode) $("#imagesList").empty();
 
-            $('[data-toggle="tooltip"]').tooltip();
-        }
+                if (appendMode && images.length == 0) imagesCount -= appendCount;
 
-        function error(status) {
-            let errorMessage = "";
-            switch (status) {
-                case 0:
-                    errorMessage = "Le service ne répond pas";
-                    break;
-                case 401:
-                    errorMessage = "Requête non autorisée";
-                    break;
-                case 400:
-                case 422:
-                    errorMessage = "Requête invalide";
-                    break;
-                case 404:
-                    errorMessage = "Service ou données introuvables";
-                    break;
-                case 409:
-                    errorMessage = "Conflits de données: Hyperlien existe déjà";
-                    break;
-                case 500:
-                    errorMessage = "Erreur interne du service";
-                    break;
-                default:
-                    errorMessage = "Une erreur est survenue";
-                    break;
+                    for (let image of images) {
+                        if (($("#searchKeyword").val() == "") || (!((image.Title.indexOf($("#searchKeyword").val()) == -1) && (image.Description.indexOf($("#searchKeyword").val())) == -1))) {
+                            var showImage = true;
+                            var author = false;
+                            if (loggedIn) if (image.UserId == userData.UserId) author = true;
+                            if (image.Shared) { if (author) image.AvatarGUID = "shared"; }
+                            else if (!author) showImage = false;
+                            if (showImage) insertIntoImageList(image, author);
+                        }
+                    }
+
+                $(".scrollContainer").scrollTop(previousScrollPosition);
+                $(".editCmd").off();
+                $(".deleteCmd").off();
+                $(".showMore").off();
+                $(".showImageCmd").click(e => { getImageDetails(e) });
+                $(".editCmd").click(e => { editImage(e) });
+                $(".deleteCmd").click(e => { deleteImage(e) });
+
+                $('[data-toggle="tooltip"]').tooltip();
             }
-            $("#errorMessage").text(errorMessage);
-            $("#errorDlg").dialog('open');
-        }
 
+            function error(status) {
+                let errorMessage = "";
+                switch (status) {
+                    case 0:
+                        errorMessage = "Le service ne répond pas";
+                        break;
+                    case 401:
+                        errorMessage = "Requête non autorisée";
+                        break;
+                    case 400:
+                    case 422:
+                        errorMessage = "Requête invalide";
+                        break;
+                    case 404:
+                        errorMessage = "Service ou données introuvables";
+                        break;
+                    case 409:
+                        errorMessage = "Conflits de données: Hyperlien existe déjà";
+                        break;
+                    case 500:
+                        errorMessage = "Erreur interne du service";
+                        break;
+                    default:
+                        errorMessage = "Une erreur est survenue";
+                        break;
+                }
+                $("#errorMessage").text(errorMessage);
+                $("#errorDlg").dialog('open');
+            }
 
         function about() {
             initDialogHeight("aboutDlg");
@@ -447,6 +456,7 @@
             resetProfileForm();
             $("#profileDlgOkBtn").text("Créer");
             $("#profileDlgDltBtn").hide(0);
+            creatingProfile=1
 
             initDialogHeight("profileDlg");
             $("#profileDlg").dialog('open');
@@ -462,23 +472,27 @@
             $("#password_profil").val("");
             $("#comfirm_profil").val("");
             ImageUploader.resetImage('imageProfil');
+            sendErrorInput()
         }
         function profileToForm(userData) {
             $("#name_profil").val(userData["Username"])
             $("#email_profil").val(userData["Email"])
             $("#GUID_profil").val(userData["AvatarGUID"]);
-
-            ImageUploader.setImage('imageProfil', "http://localhost:5000/images/" + userData["AvatarGUID"] + ".png");
-
+            
+            sendErrorInput()
+            console.log(userData["AvatarGUID"])
+            ImageUploader.setImage('imageProfil', userData["AvatarGUID"]=='No_Avatar'?"images/" + userData["AvatarGUID"] + ".png": location.protocol+"//"+location.host+"/images/" + userData["AvatarGUID"] + ".png");
         }
         function editProfile() {
             holdCheckETag = true;
             createMode = false;
             profileToForm(userData)
+            
+            sendErrorInput()
             ImageUploader.imageRequired('image', true);
             $("#profileDlg").dialog('option', 'title', "Modification de profil");
             $("#profileDlgOkBtn").text("Modifier");
-
+            creatingProfile=0
             initDialogHeight("profileDlg");
             $("#profileDlg").dialog('open');
         }
@@ -674,7 +688,8 @@
                                 switchConnection(true);
                                 $(this).dialog("close");
                                 $("input").val("")
-                            }, console.error,"verify", "accounts", `id=${userData.UserId}&code=${codeVerification}&online=1`)
+                                $("error_code").attr("hidden",1)
+                            }, ()=>{$("error_code").removeAttr("hidden")},"verify", "accounts", `id=${userData.UserId}&code=${codeVerification}&online=1`)
                         }
                     },
                     {
@@ -790,53 +805,73 @@
                         id: "profileDlgOkBtn",
                         text: "Title will be changed dynamically",
                         click: function () {
-                            let userForm = formatData(getData("profileForm"), "_profil")
-                            let ajaxProfil = new Ajax()
-                            ajaxProfil.setDefaultPath("Accounts")
-                            if (creatingProfile) {
-                                userForm["ImageData"] = userForm["ImageProfil_Data"];
-                                delete userForm["ImageProfil_Data"];
-                                userForm["Id"] = 0;
-                                ajaxProfil.POST(userForm, (data) => {
-                                    userData = {
-                                        Access_token: "",
-                                        AvatarGUID:data.AvatarGUID,
-                                        Email: data.Email,
-                                        Expire_Time:  0,
-                                        UserId: data.Id,
-                                        Username:data.Name
-                                    }
-                                    confirmEmail()
-                                }, console.error, "register")
-                            }
-                            else {
-                                if (creatingProfile || userData.Email != $("#email_profil").val()) {
+                            function sendEmail(){
+                                if (userData==null||userData.Email != $("#email_profil").val()) {
                                     confirmEmail();
                                 }
+                            }
+                            function ajoutImpossible(error){
+                                $("#error-conflict").removeAttr("hidden")
+                                $("#error-conflict").html(error)
+                            }
+                            // si aucune erreur détectée 
+                            if($("#profileDlg .error:not(:hidden)").length==0){
+                                let userForm = formatData(getData("profileForm"), "_profil")
+                                let ajaxProfil = new Ajax()
+                                ajaxProfil.setDefaultPath("accounts")
+                                if (userData==null) {
+                                    userForm["ImageData"] = userForm["ImageProfil_Data"];
+                                    delete userForm["ImageProfil_Data"];
+                                    userForm["Id"] = 0;
+                                    ajaxProfil.POST(userForm, (data) => {
+                                        userData = {
+                                            Access_token: "",
+                                            AvatarGUID:data.AvatarGUID,
+                                            Email: data.Email,
+                                            Expire_Time:  0,
+                                            UserId: data.Id,
+                                            Username:data.Name
+                                        }
+                                        sendEmail()
+                                        
+                                        getImagesList(true);
+                                    }, ()=>ajoutImpossible("Ajout impossible:\nLe courriel est déjà utilisé"), "register")
+                                }
+                                else {
 
-                                if ($("#password_profil").val() == $("#comfirm_profil").val()) {
+                                    if ($("#password_profil").val() == $("#comfirm_profil").val()) {
 
-                                    let data =
-                                    {
-                                        "Id": userData.UserId,
-                                        "Name": $("#name_profil").val(),
-                                        "Email": $("#email_profil").val(),
-                                        "Password": $("#password_profil").val()
+                                        let data =
+                                        {
+                                            "Id": userData.UserId,
+                                            "Name": $("#name_profil").val(),
+                                            "Email": $("#email_profil").val(),
+                                            "Password": $("#password_profil").val()
+                                        }
+                                        ajaxProfil.setHeaders({
+                                            "authorization": "Bearer " + userData.Access_token
+                                        })
+                                        let dataImage = $("#imageProfil_ImageContainer").css("background-image").
+                                            replace(["url"], "").replace("(", "").replace(")", "").replaceAll('"', "")
+                                        if (dataImage != location.protocol+'//'+location.host+'/ImagesManager2022/images/No_Image.png') {
+                                            data.ImageData = dataImage;
+                                            data.AvatarGUID=userData.AvatarGUID?userData.AvatarGUID:""
+                                        }
+                                        ajaxProfil.PUT(data, (info)=>{
+                                            sendEmail();
+                                            ajaxProfil.setDefaultPath("api/accounts")
+                                            ajaxProfil.GET((data)=>{
+                                                userData.AvatarGUID=data.AvatarGUID
+                                                userData.Email=data.Email
+                                                userData.Username=data.Name
+                                            },console.error,userData.UserId)
+                                            getImagesList(true);
+                                            $(this).dialog("close");
+                                        }, ()=>ajoutImpossible("Modification impossible:\nLe courriel est déjà utilisé"), "modify");
+
                                     }
-                                    ajaxProfil.setHeaders({
-                                        "authorization": "Bearer " + userData.Access_token
-                                    })
-                                    let dataImage = $("#imageProfil_ImageContainer").css("background-image").
-                                        replace(["url"], "").replace("(", "").replace(")", "").replaceAll('"', "")
-                                    if (dataImage != 'http://localhost:5000/ImagesManager2022/images/No_Image.png') {
-                                        data.data = dataImage;
-                                    }
-                                    ajaxProfil.PUT(data, console.log, console.error, "modify");
-
-                                    $(this).dialog("close");
                                 }
                             }
-
                         }
                     },
                     {
@@ -863,9 +898,19 @@
                     text: "Oui",
                     click: function () {
                         holdCheckETag = false;
+                        if(this.innerText=="Voulez-vous vraiment effacer votre compte?"){
+                            let ajaxProfil = new Ajax()
+                            ajaxProfil.setDefaultPath("accounts");
+                            ajaxProfil.setHeaders({
+                                        "authorization": "Bearer " + userData.Access_token
+                                    });
+                            ajaxProfil.GET(switchConnection,console.error,userData.UserId,"accounts/remove")
+                        }
+                        else{
                         if (imageIdToDelete)
                             DELETE(imageIdToDelete, getImagesList, error);
                         imageIdToDelete = 0;
+                    }
                         $(this).dialog("close");
                     }
                 },
@@ -899,13 +944,21 @@
                 }]
             });
 
+            $(".scrollContainer").scroll(function () {
+                if ($(".scrollContainer").scrollTop() + $(".scrollContainer").innerHeight() >= $("#imagesList").height()) {
+                    getImagesList(false);
+                }
+            });
+            sendErrorInput()
+            $("input").keyup(sendErrorInput)
+            
                 $(".scrollContainer").scroll(function () {
                     if ($(".scrollContainer").scrollTop() + $(".scrollContainer").innerHeight() >= $("#imagesList").height()) {
                         getImagesList(false);
                     }
                 });
 
-                setInterval(()=>tryRefresh(), 5000);
+                //setInterval(()=>tryRefresh(), 5000);
             }
         </script>
 

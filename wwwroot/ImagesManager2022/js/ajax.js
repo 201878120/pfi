@@ -14,9 +14,9 @@ class Ajax{
     setHeaders(headers){
         this.#headers={...this.#headers,...headers}
     }
-    GET(successCallBack, errorCallBack,action="",path="", queryString = null) {
+    GET(successCallBack, errorCallBack,action="",path="", queryString = "") {
         if(path=="") path=this.#defaultPath;
-        let url = "http://"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
+        let url = location.protocol+"//"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
         $.ajax({
             url: url,
             type: 'GET',
@@ -27,7 +27,7 @@ class Ajax{
     }
     POST(data, successCallBack, errorCallBack,action="",path="", queryString = "") {
         if(path=="") path=this.#defaultPath;
-        let url = "http://"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
+        let url = location.protocol+"//"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
         $.ajax({
             url: url,
             type: 'POST',
@@ -38,9 +38,9 @@ class Ajax{
             error: function (jqXHR) { errorCallBack(jqXHR.status) }
         });
     }
-    PUT(data, successCallBack, errorCallBack,action="",path="", queryString = null) {
+    PUT(data, successCallBack, errorCallBack,action="",path="", queryString = "") {
         if(path=="") path=this.#defaultPath;
-        let url = "http://"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
+        let url = location.protocol+"//"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
         //console.log(url)
         $.ajax({
             url: url,
@@ -52,9 +52,9 @@ class Ajax{
             error: function (jqXHR) { errorCallBack(jqXHR.status) }
         });
     }
-    DELETE(successCallBack, errorCallBack,path="", queryString = null) {
+    DELETE(successCallBack, errorCallBack,path="", queryString = "") {
         if(path=="") path=this.#defaultPath;
-        let url = "http://"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
+        let url = location.protocol+"//"+this.#baseURL+(path!=""?"/"+path:"")+(action!=""?"/"+action:"")+ (queryString!="" ? "/?"+queryString : "");
         $.ajax({
             url: url,
             type: 'DELETE',
