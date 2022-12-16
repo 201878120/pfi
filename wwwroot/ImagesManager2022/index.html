@@ -108,12 +108,6 @@
                 <div id="profileDlg">
                     <form id="profileForm">
                         
-                        <div id="error_name" class="error"></div>
-                        <label for="name_profil">Nom d'usager</label>
-                        <input type="text" id="name_profil" class="form-control" required>
-                        <input type="hidden" id="GUID_profil" value="">
-
-<<<<<<< HEAD
                     <label for="name_profil">Nom d'usager</label>
                     <div id="error_name" class="error" hidden>Requis</div>
                     <input type="text" id="name_profil" class="form-control" required>
@@ -121,12 +115,7 @@
                     
                     <label for="email_profil">Courriel</label>
                     <div id="error_email" class="error" hidden>Courriel invalid</div>
-                    <input type="text" id="email_profil" class="form-control" required>
-=======
-                        <div id="error_email" class="error"></div>
-                        <label for="email_profil">Courriel</label>
                         <input type="text" id="email_profil" class="form-control" required>
->>>>>>> c54897eaae1c45ccc9173ac73a9590c79fc0bb88
 
                     <label for="password_profil">Mot de passe</label>
                     <div id="error_password" class="error" hidden>Requis</div>
@@ -458,6 +447,7 @@
             resetProfileForm();
             $("#profileDlgOkBtn").text("Créer");
             $("#profileDlgDltBtn").hide(0);
+            creatingProfile=1
 
             initDialogHeight("profileDlg");
             $("#profileDlg").dialog('open');
@@ -480,7 +470,7 @@
             $("#email_profil").val(userData["Email"])
             $("#GUID_profil").val(userData["AvatarGUID"]);
             
-            ImageUploader.setImage('imageProfil', "http://localhost:5000/images/" + userData["AvatarGUID"] + ".png");
+            ImageUploader.setImage('imageProfil', "http://"+location.host+"/images/" + userData["AvatarGUID"] + ".png");
             sendErrorInput()
         }
         function editProfile() {
@@ -490,7 +480,7 @@
             ImageUploader.imageRequired('image', true);
             $("#profileDlg").dialog('option', 'title', "Modification de profil");
             $("#profileDlgOkBtn").text("Modifier");
-
+            creatingProfile=0
             initDialogHeight("profileDlg");
             $("#profileDlg").dialog('open');
             sendErrorInput()
@@ -805,7 +795,7 @@
                         click: function () {
                             let userForm = formatData(getData("profileForm"), "_profil")
                             let ajaxProfil = new Ajax()
-                            ajaxProfil.setDefaultPath("Accounts")
+                            ajaxProfil.setDefaultPath("accounts")
                             if (creatingProfile) {
                                 userForm["ImageData"] = userForm["ImageProfil_Data"];
                                 delete userForm["ImageProfil_Data"];
@@ -841,8 +831,9 @@
                                     })
                                     let dataImage = $("#imageProfil_ImageContainer").css("background-image").
                                         replace(["url"], "").replace("(", "").replace(")", "").replaceAll('"', "")
-                                    if (dataImage != 'http://localhost:5000/ImagesManager2022/images/No_Image.png') {
-                                        data.data = dataImage;
+                                    if (dataImage != 'http://'+location.host+'/ImagesManager2022/images/No_Image.png') {
+                                        data.ImageData = dataImage;
+                                        data.AvatarGUID=userData.AvatarGUID?userData.AvatarGUID:""
                                     }
                                     ajaxProfil.PUT(data, console.log, console.error, "modify");
 
@@ -876,9 +867,19 @@
                     text: "Oui",
                     click: function () {
                         holdCheckETag = false;
+                        if(this.innerText=="Voulez-vous vraiment effacer votre compte?"){
+                            let ajaxProfil = new Ajax()
+                            ajaxProfil.setDefaultPath("accounts");
+                            ajaxProfil.setHeaders({
+                                        "authorization": "Bearer " + userData.Access_token
+                                    })
+                            ajaxProfil.GET(console.log,console.error,"/remove/"+userData.UserId)
+                        }
+                        else{
                         if (imageIdToDelete)
                             DELETE(imageIdToDelete, getImagesList, error);
                         imageIdToDelete = 0;
+                    }
                         $(this).dialog("close");
                     }
                 },

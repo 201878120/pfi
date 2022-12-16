@@ -62,7 +62,7 @@ function sendErrorInput(){
         {
             id:"error_password",
             value:$("#password_profil").val(),
-            valider:function(){return this.value!="" || this.value=="" && createMode}
+            valider:function(){return this.value!="" || this.value=="" && !createMode}
         },
         {
             id:"error_confirm",

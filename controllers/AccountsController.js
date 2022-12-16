@@ -114,18 +114,16 @@ module.exports =
                 if (user.Password == '') { // password not changed
                     user.Password = foundedUser.Password;
                 }
-                if (user.AvatarGUID == undefined) { // AvatarGUID not changed
-                    user.AvatarGUID = foundedUser.AvatarGUID;
-                }
+                if(user.ImageData.length<1000)user.ImageData=""
                 if (this.repository != null) {
                     let updateResult = this.repository.update(user);
                     if (updateResult == this.repository.updateResult.ok) {
                         this.HttpContext.response.ok();
                         if (user.Email != foundedUser.Email) {
                             user.VerifyCode = utilities.makeVerifyCode(6);
-                            this.repository.update(user);
                             this.sendVerificationEmail(user);
                         }
+                        //this.repository.update(user);
                     }
                     else
                         if (updateResult == this.repository.updateResult.conflict)
@@ -142,6 +140,7 @@ module.exports =
         }
         // GET:account/remove/id
         remove(id) { // warning! this is not an API endpoint
+
             super.remove(id);
         }
     }
