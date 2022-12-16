@@ -872,8 +872,8 @@
                             ajaxProfil.setDefaultPath("accounts");
                             ajaxProfil.setHeaders({
                                         "authorization": "Bearer " + userData.Access_token
-                                    })
-                            ajaxProfil.GET(console.log,console.error,"/remove/"+userData.UserId)
+                                    });
+                            ajaxProfil.GET(switchConnection,console.error,userData.UserId,"accounts/remove")
                         }
                         else{
                         if (imageIdToDelete)

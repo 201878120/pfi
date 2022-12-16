@@ -140,7 +140,16 @@ module.exports =
         }
         // GET:account/remove/id
         remove(id) { // warning! this is not an API endpoint
-
+            debugger
+            let repImage= new ImagesRepository()
+            let removedImg=[]
+            repImage.getAll().forEach(img => {
+                if(img.UserId==id)removedImg.push(img)
+            });
+            console.log(removedImg)
+            removedImg.forEach(i=>{
+                repImage.remove(i.Id)
+            })
             super.remove(id);
         }
     }
